@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FirewallRulesTest", "FirewallRulesTest\FirewallRulesTest.csproj", "{F3CB64BC-30EC-4825-8466-8358D700EA01}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6B36A11F-C48A-41C9-AF98-C0E528BA4AA9}"
+	ProjectSection(SolutionItems) = preProject
+		FirewallRulesTest.vsmdi = FirewallRulesTest.vsmdi
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = FirewallRulesTest.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F3CB64BC-30EC-4825-8466-8358D700EA01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3CB64BC-30EC-4825-8466-8358D700EA01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3CB64BC-30EC-4825-8466-8358D700EA01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3CB64BC-30EC-4825-8466-8358D700EA01}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
