@@ -25,9 +25,9 @@
                     <span class="input-group-addon">Runtime:</span>
                     <input id="runTime" type="text" class="form-control" placeholder="Runtime" data-toggle="dropdown" value="IScope_Beta">
                     <ul class="dropdown-menu" role="menu" id="runtimeMenu">
-                        <li><a href="#">IScope_Beta</a></li>
-                        <li><a href="#">IScope_Default</a></li>
-                        <li><a href="#">IScope_vNext</a></li>
+                        <li><a href="#"><small>IScope_Beta</small></a></li>
+                        <li><a href="#"><small>IScope_Default</small></a></li>
+                        <li><a href="#"><small>IScope_vNext</small></a></li>
                     </ul>
                 </div>
             </div>
@@ -91,7 +91,7 @@
                 $("#code").text(data);
 
             }).fail(function (data) {
-                $("#code").text("ERROR: (" + data.status + ") " + data.statusText + ". " + data.responseText);
+                $("#code").text("ERROR: (" + data.status + ") " + data.statusText + " " + data.responseText);
             }).always(function () {
                 ajaxindicatorstop();
             });

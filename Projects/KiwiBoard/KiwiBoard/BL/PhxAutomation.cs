@@ -13,6 +13,13 @@ namespace KiwiBoard.BL
 {
     public class PhxAutomation : IDisposable
     {
+        public static PhxAutomation Instance = null;
+
+        static PhxAutomation()
+        {
+            Instance = new PhxAutomation();
+        }
+
         private PowerShell psInstance = null;
 
         public PhxAutomation()
@@ -20,9 +27,9 @@ namespace KiwiBoard.BL
             psInstance = System.Management.Automation.PowerShell.Create(RunspaceMode.NewRunspace);
 
             psInstance.AddScript("Set-ExecutionPolicy -ExecutionPolicy Bypass -Force");
-            psInstance.AddScript(@"Import-Module 'D:\tools\CoreXtAutomationGit\CoreXTAutomation.psd1'");
-            psInstance.AddScript(@"Import-Module 'D:\tools\PhxAutomation\PHXAutomation.psd1'");
-            psInstance.AddScript(@"Set-ApGoldRoot -Path C:\src\apgold");
+            psInstance.AddScript(string.Format(@"Import-Module '{0}'", Constants.CoreXTAutomationModule));
+            psInstance.AddScript(string.Format(@"Import-Module '{0}'", Constants.PhxAutomationModule));
+            psInstance.AddScript(@"Set-ApGoldRoot -Path " + Constants.ApGoldSrcRoot);
             psInstance.Invoke();
             if (psInstance.Streams.Error.Count > 0)
             {
@@ -33,14 +40,33 @@ namespace KiwiBoard.BL
         public string FetchIscopeJobStateXml(string machineName, string runtime)
         {
             var script = string.Format("\"{0}\" | Read-PhxFile \"data\\iscopehost\\{1}\\state.xml\"", machineName, runtime);
-            return this.RunScript(script);
+
+            try
+            {
+                return this.RunScript(script);
+            }
+            catch (RuntimeException ex)
+            {
+                var errorCode = PhxAutomationErrorCode.Unknown;
+                if (ex.Message.Contains("Can't get cluster name for machine"))
+                {
+                    errorCode = PhxAutomationErrorCode.MachineNotFound;
+                }
+
+                throw new PhxAutomationException(errorCode, ex.Message, ex);
+            }
+            catch (Exception ex)
+            {
+                throw new PhxAutomationException(PhxAutomationErrorCode.Unknown, ex.Message, ex);
+            }
         }
 
-        public string RunScript(string script)
+        private string RunScript(string script)
         {
             lock (this)
             {
                 StringBuilder result = new StringBuilder();
+                psInstance.AddScript("$error.clear();");
                 psInstance.AddScript(script);
                 var output = psInstance.Invoke();
 
@@ -67,6 +93,18 @@ namespace KiwiBoard.BL
 
     public class PhxAutomationException : Exception
     {
+        public PhxAutomationException(PhxAutomationErrorCode errorCode)
+            : base()
+        {
+            this.ErrorCode = errorCode;
+        }
+
+        public PhxAutomationException(PhxAutomationErrorCode errorCode, string description, Exception innerException)
+            : base(description, innerException)
+        {
+            this.ErrorCode = errorCode;
+        }
+
         public PhxAutomationException(PhxAutomationErrorCode errorCode, string description, params string[] parameters)
             : base(string.Format(description, parameters))
         {
@@ -79,5 +117,7 @@ namespace KiwiBoard.BL
     public enum PhxAutomationErrorCode
     {
         InitError = 0,
+        MachineNotFound,
+        Unknown
     }
 }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Xml.Linq;
@@ -17,34 +18,30 @@ namespace KiwiBoard.Controllers_API
     {
         private static object syncObj = new object();
 
-        private PhxAutomation phxPowershell;
-        public PhxUtilsController()
+        [Route("IscopeJobState")]
+        [HttpGet]
+        public HttpResponseMessage IscopeJobState(string machineName, string runtime)
         {
-            phxPowershell = new PhxAutomation();
+            return this.IscopeJobState(machineName, runtime, null);
         }
 
         [Route("IscopeJobState")]
         [HttpGet]
-        public HttpResponseMessage IscopeJobState(string machineName, string runtime = "iscope_beta")
+        public HttpResponseMessage IscopeJobState(string machineName, string runtime, string jobId)
         {
             try
             {
-                if (string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(runtime))
-                {
-                    return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Wrong query parameters!" };
-                }
+                var stateXmlString = this.FetchIscopeJobState(machineName, runtime, jobId);
 
-                var stateXmlString = this.phxPowershell.FetchIscopeJobStateXml(machineName, runtime);
-                if (!string.IsNullOrEmpty(stateXmlString))
-                {
-                    // Write to cache
-                    this.WriteIscopeJobStateXmlCache(this.GetCachedIscopeJobStateXmlPath(machineName, runtime), stateXmlString);
-                }
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(stateXmlString) };
+            }
+            catch (ArgumentException)
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Wrong query parameters! Machine name and runtime cannot be null." };
             }
             catch (JobNotFoundException ex)
             {
-                return new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = "Job Not Found", Content = new StringContent(ex.Message) };
+                return new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ex.Message };
             }
             catch (Exception ex)
             {
@@ -52,68 +49,98 @@ namespace KiwiBoard.Controllers_API
             }
         }
 
-        [Route("IscopeJobState")]
-        [HttpGet]
-        public HttpResponseMessage IscopeJobState(string jobId, string machineName, string runtime = "iscope_beta")
+        /// <summary>
+        /// Force get job state.xml from PHX machine and put in cache. returns XML content.
+        /// </summary>
+        private string ForceFetchAllJobStates(string machineName, string runtime)
         {
-            try
+            if (string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(runtime))
             {
-                if (string.IsNullOrEmpty(jobId) || string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(runtime))
-                {
-                    return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Wrong query parameters!" };
-                }
-
-                var stateXmlString = this.FetchIscopeJobState(jobId, machineName, runtime);
-
-                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(stateXmlString) };
+                throw new ArgumentNullException();
             }
-            catch (JobNotFoundException ex)
-            {
-                return new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = "Job Not Found", Content = new StringContent(ex.Message) };
-            }
-            catch (Exception ex)
-            {
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(ex.ToString()) };
-            }
-        }
-
-        private string FetchIscopeJobState(string jobId, string machineName, string runtime)
-        {
-            Func<string, XElement> parseJobXml = (xmlString) =>
-            {
-                XDocument xdoc = XDocument.Parse(xmlString);
-                return xdoc.XPathSelectElements(string.Format("/Jobs/Job[translate(./Guid/text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='{0}']", jobId.ToLower())).SingleOrDefault();
-            };
-
-            XElement jobState = null; ;
 
             var cachedXmlFile = this.GetCachedIscopeJobStateXmlPath(machineName, runtime);
 
-            // Read from cache.
-            if (File.Exists(cachedXmlFile) && (jobState = parseJobXml(File.ReadAllText(cachedXmlFile))) != null)
+            var stateXmlString = string.Empty;
+
+            try
             {
-                return jobState.ToString();
+                stateXmlString = PhxAutomation.Instance.FetchIscopeJobStateXml(machineName, runtime);
+            }
+            catch (PhxAutomationException ex)
+            {
+                if (ex.ErrorCode == PhxAutomationErrorCode.MachineNotFound)
+                {
+                    throw new JobNotFoundException(ex.Message);
+                }
+
+                throw ex;
+            }
+
+            if (!string.IsNullOrEmpty(stateXmlString))
+            {
+                // write to cache.
+                this.WriteIscopeJobStateXmlCache(cachedXmlFile, stateXmlString).Start();
+            }
+
+            return stateXmlString;
+        }
+
+        private XElement TryParseDesiredJobStateFromStateXml(string xmlString, string jobId)
+        {
+            if (string.IsNullOrEmpty(xmlString) || string.IsNullOrEmpty(jobId))
+            {
+                throw new ArgumentNullException();
+            }
+
+            XDocument xdoc = XDocument.Parse(xmlString);
+            return xdoc.XPathSelectElements(string.Format("/Jobs/Job[translate(./Guid/text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='{0}']", jobId.ToLower())).SingleOrDefault();
+        }
+
+        private string GetJobStateFromCachedFile(string filePath, string jobId)
+        {
+            var jobState = this.TryParseDesiredJobStateFromStateXml(File.ReadAllText(filePath), jobId);
+            return jobState == null ? string.Empty : jobState.ToString();
+        }
+
+        private string FetchIscopeJobState(string machineName, string runtime, string jobId = null)
+        {
+            if (string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(runtime))
+            {
+                throw new ArgumentNullException();
+            }
+
+            var cachedXmlFile = this.GetCachedIscopeJobStateXmlPath(machineName, runtime);
+
+            if (string.IsNullOrEmpty(jobId))
+            {
+                // Get all XML, will refresh cached file
+
+                var stateXml = this.ForceFetchAllJobStates(machineName, runtime);
+                if (string.IsNullOrEmpty(stateXml))
+                {
+                    throw new JobNotFoundException("Job state XML not found or empty.");
+                }
+
+                return stateXml;
             }
             else
             {
-                var stateXmlString = this.phxPowershell.FetchIscopeJobStateXml(machineName, runtime);
-                if (!string.IsNullOrEmpty(stateXmlString))
+                // parse from cache first
+                var desiredJobSate = this.TryParseDesiredJobStateFromStateXml(File.ReadAllText(cachedXmlFile), jobId);
+                if (desiredJobSate != null)
                 {
-                    // write to cache.
-                    this.WriteIscopeJobStateXmlCache(cachedXmlFile, stateXmlString);
-                }
-                else
-                {
-                    throw new JobNotFoundException("Job State.xml not found.");
+                    return desiredJobSate.ToString();
                 }
 
-                jobState = parseJobXml(stateXmlString);
-                if (jobState == null)
+                var downloadedXml = this.ForceFetchAllJobStates(machineName, runtime);
+                desiredJobSate = this.TryParseDesiredJobStateFromStateXml(downloadedXml, jobId);
+                if (desiredJobSate == null)
                 {
-                    throw new JobNotFoundException("Job not found in State.xml.");
+                    throw new JobNotFoundException("Job state not found in state.xml.");
                 }
 
-                return jobState.ToString();
+                return desiredJobSate.ToString();
             }
         }
 
@@ -122,12 +149,16 @@ namespace KiwiBoard.Controllers_API
             return string.Format(HttpContext.Current.Server.MapPath(@"~/App_Data/{0}_{1}_iscopestate.xml.cache"), machineName, runtime);
         }
 
-        private void WriteIscopeJobStateXmlCache(string filePath, string content)
+        private Task<bool> WriteIscopeJobStateXmlCache(string filePath, string content)
         {
-            lock (syncObj)
+            return Task.Run<bool>(() =>
             {
-                File.WriteAllText(filePath, content);
-            }
+                lock (syncObj)
+                {
+                    File.WriteAllText(filePath, content);
+                    return true;
+                }
+            });
         }
     }
 

@@ -1,5 +1,7 @@
-﻿using System;
+﻿using KiwiBoard.BL;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 
@@ -9,19 +11,22 @@ namespace KiwiBoard.Models.Tools
     {
         public IScopeJobDiagnosticModel()
         {
-
+            this.Cluster = "Bn2";
+            this.Environment = "KoboFrontend04-Test-Bn2";
+            this.Machines = this.GetIKIEMachines(this.Cluster, this.Environment);
         }
 
-        public IScopeJobDiagnosticModel(string machineName, string runtime, string jobId)
+        public string Cluster { get; set; }
+        public string Environment { get; set; }
+        public string[] Machines { get; set; }
+
+        private string[] GetIKIEMachines(string cluster, string env)
         {
-            this.MachineName = machineName;
-            this.RunTime = runtime;
-            this.JobId = jobId;
+            var machinesCSV = Path.Combine(Constants.ApGoldSrcRoot, cluster, env, "Machines.csv");
+            return File.ReadAllLines(machinesCSV)
+                .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith("#") && l.Split(',')[2] == "IKFE")
+                .Select(line => line.Split(',')[0])
+                .ToArray();
         }
-
-        public string MachineName { get; set; }
-        public string RunTime { get; set; }
-        public string JobId { get; set; }
-        public string JobState { get; set; }
     }
 }
