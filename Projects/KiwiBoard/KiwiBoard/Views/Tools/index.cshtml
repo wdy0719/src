@@ -1,0 +1,136 @@
+﻿@{
+
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">IScope Job Diagnostic  <small><i>&nbsp;&nbsp;- fetch iscope job state from PHX machine.</i></small></></h3>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">JobId:</span>
+                    <input id="jobId" type="text" class="form-control" placeholder="ex: 72992f4a-7840-4805-8ca4-7938fa83bec2">
+                </div>
+            </div>
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Machine:</span>
+                    <input id="machineName" type="text" class="form-control" placeholder="ex: BN4SCH103190147">
+                </div>
+            </div>
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Runtime:</span>
+                    <input id="runTime" type="text" class="form-control" placeholder="Runtime" data-toggle="dropdown" value="IScope_Beta">
+                    <ul class="dropdown-menu" role="menu" id="runtimeMenu">
+                        <li><a href="#">IScope_Beta</a></li>
+                        <li><a href="#">IScope_Default</a></li>
+                        <li><a href="#">IScope_vNext</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <button class="btn btn-primary btn-sm" type="button" id="getJobState">Go!</button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <ul class="nav nav-tabs" style="margin-top:10px">
+                <li role="presentation" class="active"><a href="#">Job State</a></li>
+                <li role="presentation" aria-disabled="true"><a href="#">JM Log</a></li>
+            </ul>
+          
+            <div class="highlight" style="margin-top:5px">
+                <div class="clipboard">
+                    <button id="copy" class="btn btn-sm btn-default btn-clipboard" data-clipboard-target="code" title="Click to copy to clipboard."><small>Copy</small></button>
+                </div>
+                <pre id="code" class="prettyprint lang-xml" style="min-height:300px"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .clipboard {
+        position:relative;
+    }
+    .btn-clipboard{
+        right:0px;
+        position:absolute;
+        z-index:10;
+    }
+    .btn-clipboard.zeroclipboard-is-hover { background-color: #eee; }
+    .btn-clipboard.zeroclipboard-is-active { background-color: #aaa; }
+</style>
+
+@section Scripts
+{
+
+    <script>
+        $(document).ready(function () {
+
+        function getJobState() {
+            var jobId = $.trim($("#jobId").val());
+            var machineName = $.trim($("#machineName").val());
+            var runTime = $.trim($("#runTime").val());
+            var queryUrl = "/api/phxutils/iscopejobstate?machineName=" + machineName + "&runtime=" + runTime;
+
+            if (jobId != "") {
+                queryUrl += "&jobId=" + jobId;
+            }
+
+            $("#code").text("");
+            ajaxindicatorstart();
+            $.get(queryUrl, function (data) {
+                
+            }).done(function (data) {
+
+                $("#code").text(data);
+
+            }).fail(function (data) {
+                $("#code").text("ERROR: (" + data.status + ") " + data.statusText + ". " + data.responseText);
+            }).always(function () {
+                ajaxindicatorstop();
+            });
+        }
+
+        var clipboard = new ZeroClipboard($("#copy"), { moviePath: "Scripts/zeroclipboard.swf" });
+
+        clipboard.on("ready", function (readyEvent) {
+            // alert( "ZeroClipboard SWF is ready!" );
+            clipboard.on("aftercopy", function (event) {
+                // `this` === `client`
+                // `event.target` === the element that was clicked
+                // event.target.style.display = "none";
+                // alert("Copied text to clipboard: " + event.data["text/plain"]);
+            });
+        });
+
+        $("#getJobState").click(function () {
+            getJobState();
+        });
+
+        $("#runtimeMenu li a").click(function () { $("#runTime").val($(this).text()); });
+
+        function ajaxindicatorstart() {
+            $('body').css('cursor', 'wait');
+            $("input").prop('disabled', true);
+            $("button").prop('disabled', true);
+        }
+
+        function ajaxindicatorstop() {
+            $("input").prop('disabled', false);
+            $("button").prop('disabled', false);
+            $('body').css('cursor', 'auto');
+        }
+    });
+
+
+
+   // $(document).ajaxStart(function () { ajaxindicatorstart(); }).ajaxStop(function () { ajaxindicatorstop() });
+   // $.ajax({ global: false, });
+    </script>
+}

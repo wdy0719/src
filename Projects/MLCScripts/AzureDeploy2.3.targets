@@ -1,0 +1,17 @@
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PackageName>$(AssemblyName).cspkg</PackageName>
+    <PackageForComputeEmulator>true</PackageForComputeEmulator>
+  </PropertyGroup>
+  <Target Name="AzureDeploy" DependsOnTargets="Publish" Condition="$(AzurePublishProfile)!='' And $(cloudConfigLocation)!='' And $(subscriptionDataFile)!=''">
+    <Message Text="Executing target AzureDeploy from AzureDeploy.targets file"/>
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" IgnoreStandardErrorWarningFormat="false" 
+         Command="$(windir)\system32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy ByPass -f \\mlcbld\cfg\PublishCloudServices\AzurePublish2.3.ps1 -packageLocation &quot;$(PublishDir)$(PackageName)&quot; -cloudConfigLocation &quot;$(cloudConfigLocation)&quot; -azurePubXmlFile  &quot;Profiles\$(AzurePublishProfile)&quot; -subscriptionDataFile &quot;$(subscriptionDataFile)&quot;">
+</Exec>
+  </Target>
+<Target Name="AzureEmulatorDeploy" DependsOnTargets="Build">
+    <Message Text="Executing target AzureEmulatorDeploy from AzureDeploy.targets file"/>
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" 
+         Command="&quot;%ProgramW6432%\Microsoft SDKs\Windows Azure\Emulator\CSRun.exe&quot; csx\$(Configuration) ServiceConfiguration.Local.cscfg" />
+  </Target>
+</Project>

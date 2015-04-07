@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestConfig>
+  <!-- Available options are: internet explorer, firefox, chrome -->
+  <Browser>internet explorer</Browser>
+  <!-- Available options are: 11_7, 11_8 for Win7,Win8 respectively -->
+  <Version>11_8</Version>
+  <Platform></Platform>
+  <Url>https://sched-test.tip.skype.net/</Url>
+  <Mode>local</Mode>
+  <GridHubUrl>http://skypecollabsrv1:4444/wd/hub</GridHubUrl>
+  <GridPageUrl>http://scx-test.cloudapp.net/ui/TestMode</GridPageUrl>
+</TestConfig>

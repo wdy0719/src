@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: Calibri Light;
+            font-size:small;
+        }
+        ul{
+             margin:0px;
+        }
+
+        table{
+              font-size:smaller;
+            font-family: Calibri Light;
+            margin-left:30px;
+        }
+
+        .summary td{
+            vertical-align:top;
+            padding: 0px;
+            margin:0px;
+        }
+
+
+        .TestTable {
+            border-width: 0px;
+            border-spacing: 0px;
+            border-style: none;
+            border-collapse: collapse;
+          
+            text-align: center;
+            
+        }
+
+        .TestTable thead {
+                background-color: #EFEFF7;
+            }
+
+        .TestTable td {
+            border-width: 1px;
+            padding: 0px;
+            border-style: inset;
+            border-color: gray;
+            border-collapse: collapse;
+        }
+
+           .bg-Pass {
+                background-color: green;
+            }
+           .bg-Fail {
+                background-color: red;
+            }
+           .bg-Unknown {
+                background-color: yellow;
+            }
+        .ft-Pass {
+            color:green;
+        } 
+        .ft-Fail {
+            color:red;
+        } 
+        .ft-Unknown {
+            color:yellow;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h2 style="font-size: medium; margin-bottom: 0">MLC SkypeCast Automation Report</h2>
+        <hr />
+        <span><b>Summary:</b></span>
+        <table class="summary">
+            <tr><td width="20px">-</td><td><span>Overall Status: %OverallStatus%</span></td></tr>
+            <tr><td>-</td><td><span>Build number: <b>%BuildNumber%</b></span></td></tr>
+            <tr><td>-</td><td><span>Scheduler Service Deployment: %SSDeployment%</span></td></tr>
+            <tr><td>-</td><td><span>Data Service Deployment: %DSDeployment%</span></td></tr>
+	<tr><td>-</td><td><span>Join Service Deployment: %JSDeployment%</span></td></tr>
+	<tr><td>-</td><td><span>Activation Service Deployment: %ASDeployment%</span></td></tr>
+            <tr><td>-</td><td><span>Environment: <b>Tst</b>
+    <br>    Scheduler URL: <a href="https://sched-test.tip.skype.net/">https://sched-test.tip.skype.net/</a>
+</span></td></tr>
+        </table>
+
+        <hr />
+        <br />
+        <span><b>SkypeCast UI Tests:</b></span>
+        <table class="TestTable">
+            <thead>
+                <tr>
+                    <td width="70">
+                        Browser
+                    </td>
+                    <td width="70">
+                        Total
+                    </td>
+                    <td width="70">
+                        Executed
+                    </td>
+                    <td width="70">
+                        Failed
+                    </td>
+                    <td width="70">
+                        Duration
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                %UITestResult%
+            </tbody>
+        </table>
+
+        <br />
+        <span><b>SkypeCast API Tests:</b></span>
+        <table class="TestTable">
+            <thead>
+                <tr>
+		     <td width="70">
+                        Category
+                    </td>
+                    <td width="70">
+                        Total
+                    </td>
+                    <td width="70">
+                        Executed
+                    </td>
+                    <td width="70">
+                        Failed
+                    </td>
+                    <td width="80">
+                        Duration
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                %APITestResult%
+            </tbody>
+        </table>
+
+
+        <br />
+        <hr />
+        <div style="font-size:xx-small">
+            <span>* See test logs from YellowTail report <a href="http://yellowtail/reports/mlc">here</a>.</span><br />
+            <span>* See original test logs from <a href="%TestLogLocation%">here</a>.</span><br />
+            %AdditionalInfo%
+        </div>
+    </div>
+</body>
+</html>
