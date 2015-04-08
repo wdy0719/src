@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web;
+using System.Web.Configuration;
 
 namespace KiwiBoard.BL
 {
@@ -68,6 +70,32 @@ namespace KiwiBoard.BL
 
             RunProcess(shellPath, sb.ToString(), out output, out error);
             return output;
+        }
+
+        public static IDictionary<string, IEnumerable<string>> GetEnvironmentMachineMap()
+        {
+            var cluster = WebConfigurationManager.AppSettings["ISCOPEJOBDIAGNOSTIC_CLUSTER"];
+            var environments = WebConfigurationManager.AppSettings["ISCOPEJOBDIAGNOSTIC_ENVRIONMENT"].Split(',').Select(e => e.Trim()).ToArray();
+
+            return GetEnvironmentMachineMap(cluster, environments);
+        }
+
+        public static IDictionary<string, IEnumerable<string>> GetEnvironmentMachineMap(string cluster, string[] environments)
+        {
+            var dict = new Dictionary<string, IEnumerable<string>>();
+            foreach (var env in environments)
+            {
+                var machinesCSV = Path.Combine(Constants.ApGoldSrcRoot, "autopilotservice", cluster, env, "Machines.csv");
+
+
+                var machines = File.ReadAllLines(machinesCSV)
+                    .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith("#") && l.Split(',')[2] == "IKFE")
+                    .Select(line => line.Split(',')[0]);
+
+                dict.Add(env, machines);
+            }
+
+            return dict;
         }
     }
 }

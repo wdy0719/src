@@ -26,20 +26,19 @@
                 <ul class="nav navbar-nav" style="padding-left:60px">
                     <li class="active"><a href="~/Tools">Tools <span class="sr-only">(current)</span></a></li>
                 </ul>
-                <p class="nav navbar-text navbar-right" style="padding-right:20PX" >Hello, @User.Identity.Name !</p>
+                <p class="nav navbar-text navbar-right" style="padding-right:60PX" >Hello, @User.Identity.Name !</p>
             </div><!-- /.navbar-collapse -->
             <div class="navbar-collapse collapse">
 
             </div>
         </div>
     </div>
-    <div class="container-fluid body-content" style="padding-left: 20px;padding-right:20px;padding-top:10px; border:thick;">
+    <div class="container-fluid body-content" style="padding-left: 20px;padding-right:20px;padding-top:10px;padding-bottom:20px; border:thick;">
         @RenderBody()
     </div>
     
-    <footer style="position:fixed;z-index: 1000000;overflow: hidden;bottom:0;width:100%;">
-        <hr />
-        <p>&copy; @DateTime.Now.Year - <a href="mailto:v-dayow@microsoft.com">v-dayow@microsoft.com</a></p>
+    <footer class="navbar navbar-default navbar-fixed-bottom" style="position:fixed;overflow:hidden;bottom:0;min-height:30px !important;">
+        <small>&copy; @DateTime.Now.Year - contact: <a href="mailto:v-dayow@microsoft.com">v-dayow@microsoft.com</a></small>
     </footer>
 
     @Scripts.Render("~/bundles/jquery")

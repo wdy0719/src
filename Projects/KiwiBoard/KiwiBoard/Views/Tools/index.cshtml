@@ -5,77 +5,70 @@
         <h3 class="panel-title">IScope Job Diagnostic  <small><i>&nbsp;&nbsp;- fetch iscope job state from PHX machine.</i></small></></h3>
     </div>
     <div class="panel-body">
-        <!--
-        <div class="row">
-            <div class="col-sm-2">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-addon">Cluster:</span>
-                    <input id="cluster" type="text" class="form-control" readonly="readonly" value="@Model.Cluster">
-                </div>
-            </div>
-            <div class=" col-sm-2">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-addon">Environment:</span>
-                    <input id="environment" type="text" class="form-control" readonly="readonly" value="@Model.Environments.First()">
-                </div>
-            </div>
-        </div>
-            -->
         <div class="row">
             <div class=" col-sm-2">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-addon">Environment:</span>
-                    <input id="environment" type="text" class="form-control" readonly="readonly" value="@Model.Environments.First()" data-toggle="dropdown">
-                    <ul class="dropdown-menu" role="menu" id="environmentMenu">
-                        @foreach (var environment in @Model.Environments)
-                        {
-                            <li><a href="#"><small>@environment</small></a></li>
-                        }
-                    </ul>
+                    <div class="input-group-btn">
+                        <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Environment: <span class="caret" /></button>
+                        <ul class="dropdown-menu" role="menu" id="environmentMenu">
+                            <li><a href="~/Tools"><small>*</small></a></li>
+                            <li class="divider"></li>
+                            @foreach (var environment in @Model.Environments)
+                            {
+                                <li><a href="~/Tools?env=@environment"><small>@environment</small></a></li>
+                            }
+                        </ul>
+                    </div>
+                    <input id="environment" type="text" class="form-control" readonly="readonly" value="@Model.SelectedEnvironment" title="Select environment to get IKFE machine list.">
+                </div>
+            </div>
 
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Runtime:</span>
+                    <input id="runTime" type="text" class="form-control" placeholder="Runtime" data-toggle="dropdown" value="IScope_Beta">
+                    <ul class="dropdown-menu" role="menu" id="runtimeMenu">
+                        <li><a href="#"><small>IScope_Beta</small></a></li>
+                        <li><a href="#"><small>IScope_Default</small></a></li>
+                        <li><a href="#"><small>IScope_vNext</small></a></li>
+                    </ul>
                 </div>
             </div>
-                <div class=" col-sm-2">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-addon">Machine:</span>
-                        <input id="machineName" type="text" class="form-control" placeholder="ex: BN4SCH103190147" data-toggle="dropdown" value="@Model.Machines.FirstOrDefault()">
+
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Machine:</span>
+                    <input id="machineName" type="text" class="form-control" placeholder="ex: BN4SCH103190147" data-toggle="dropdown" value="">
+                    @if (Model.Machines != null && Model.Machines.Count() != 0)
+                    {
                         <ul class="dropdown-menu" role="menu" id="machineMenu">
                             @foreach (var machine in @Model.Machines)
                             {
                                 <li><a href="#"><small>@machine</small></a></li>
                             }
                         </ul>
-                    </div>
-                </div>
-                <div class=" col-sm-2">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-addon">Runtime:</span>
-                        <input id="runTime" type="text" class="form-control" placeholder="Runtime" data-toggle="dropdown" value="IScope_Beta">
-                        <ul class="dropdown-menu" role="menu" id="runtimeMenu">
-                            <li><a href="#"><small>IScope_Beta</small></a></li>
-                            <li><a href="#"><small>IScope_Default</small></a></li>
-                            <li><a href="#"><small>IScope_vNext</small></a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class=" col-sm-2">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-addon">Job Id:</span>
-                        <input id="jobId" type="text" class="form-control" placeholder="(empty to get all)">
-                    </div>
-                </div>
-                <div class=" col-sm-2">
-                    <div class="input-group input-group-sm">
-                        <button class="btn btn-primary btn-sm" type="button" id="getJobState">Go!</button>
-                    </div>
+                    }
                 </div>
             </div>
+
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Job Id:</span>
+                    <input id="jobId" type="text" class="form-control" placeholder="(empty to get all)">
+                </div>
+            </div>
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <button class="btn btn-primary btn-sm" type="button" id="getJobState">Go!</button>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <ul class="nav nav-tabs" style="margin-top:10px">
                 <li role="presentation" class="active"><a href="#">Job State</a></li>
                 <li role="presentation" aria-disabled="true"><a href="#">JM Log</a></li>
             </ul>
-          
+
             <div class="highlight" style="margin-top:5px">
                 <div class="clipboard">
                     <button id="copy" class="btn btn-sm btn-default btn-clipboard" data-clipboard-target="code" title="Click to copy to clipboard."><small>Copy</small></button>
@@ -88,23 +81,31 @@
 
 <style>
     .clipboard {
-        position:relative;
+        position: relative;
     }
-    .btn-clipboard{
-        right:0px;
-        position:absolute;
-        z-index:10;
-    }
-    .btn-clipboard.zeroclipboard-is-hover { background-color: #eee; }
-    .btn-clipboard.zeroclipboard-is-active { background-color: #aaa; }
 
-    .panel{
-        min-width:310px;
+    .btn-clipboard {
+        right: 0px;
+        position: absolute;
+        z-index: 10;
     }
-    .col-sm-2{
-        width:300px;
-        padding-right:0px;
-        margin-bottom:5px;
+
+        .btn-clipboard.zeroclipboard-is-hover {
+            background-color: #eee;
+        }
+
+        .btn-clipboard.zeroclipboard-is-active {
+            background-color: #aaa;
+        }
+
+    .panel {
+        min-width: 310px;
+    }
+
+    .col-sm-2 {
+        width: 300px;
+        padding-right: 0px;
+        margin-bottom: 5px;
     }
 </style>
 
@@ -114,67 +115,69 @@
     <script>
         $(document).ready(function () {
 
-        function getJobState() {
-            var jobId = $.trim($("#jobId").val());
-            var machineName = $.trim($("#machineName").val());
-            var runTime = $.trim($("#runTime").val());
-            var queryUrl = "/api/phxutils/iscopejobstate?machineName=" + machineName + "&runtime=" + runTime;
+            function getJobState() {
+                var jobId = $.trim($("#jobId").val());
+                var machineName = $.trim($("#machineName").val());
+                var runTime = $.trim($("#runTime").val());
+                var queryUrl = "/api/phxutils/iscopejobstate?machineName=" + machineName + "&runtime=" + runTime;
 
-            if (jobId != "") {
-                queryUrl += "&jobId=" + jobId;
+                if (jobId != "") {
+                    queryUrl += "&jobId=" + jobId;
+                }
+
+                $("#code").text("");
+                ajaxindicatorstart();
+                $.get(queryUrl, function (data) {
+
+                }).done(function (data) {
+
+                    $("#code").text(data);
+
+                }).fail(function (data) {
+                    $("#code").text("ERROR: (" + data.status + ") " + data.statusText + " " + data.responseText);
+                }).always(function () {
+                    ajaxindicatorstop();
+                });
             }
 
-            $("#code").text("");
-            ajaxindicatorstart();
-            $.get(queryUrl, function (data) {
-                
-            }).done(function (data) {
+            var clipboard = new ZeroClipboard($("#copy"), { moviePath: "Scripts/zeroclipboard.swf" });
 
-                $("#code").text(data);
-
-            }).fail(function (data) {
-                $("#code").text("ERROR: (" + data.status + ") " + data.statusText + " " + data.responseText);
-            }).always(function () {
-                ajaxindicatorstop();
+            clipboard.on("ready", function (readyEvent) {
+                // alert( "ZeroClipboard SWF is ready!" );
+                clipboard.on("aftercopy", function (event) {
+                    // `this` === `client`
+                    // `event.target` === the element that was clicked
+                    // event.target.style.display = "none";
+                    // alert("Copied text to clipboard: " + event.data["text/plain"]);
+                });
             });
-        }
 
-        var clipboard = new ZeroClipboard($("#copy"), { moviePath: "Scripts/zeroclipboard.swf" });
-
-        clipboard.on("ready", function (readyEvent) {
-            // alert( "ZeroClipboard SWF is ready!" );
-            clipboard.on("aftercopy", function (event) {
-                // `this` === `client`
-                // `event.target` === the element that was clicked
-                // event.target.style.display = "none";
-                // alert("Copied text to clipboard: " + event.data["text/plain"]);
+            $("#getJobState").click(function () {
+                getJobState();
             });
+
+            $(".dropdown-menu li a").click(function () {
+                var target = $(this).parent().parent().prev();
+                target.val($(this).text());
+                target.change();
+            });
+
+            function ajaxindicatorstart() {
+                $('body').css('cursor', 'wait');
+                $("input").prop('disabled', true);
+                $("button").prop('disabled', true);
+            }
+
+            function ajaxindicatorstop() {
+                $("input").prop('disabled', false);
+                $("button").prop('disabled', false);
+                $('body').css('cursor', 'auto');
+            }
         });
 
-        $("#getJobState").click(function () {
-            getJobState();
-        });
-
-        $(".dropdown-menu li a").click(function () {
-            $(this).parent().parent().prev().val($(this).text());
-        });
-
-        function ajaxindicatorstart() {
-            $('body').css('cursor', 'wait');
-            $("input").prop('disabled', true);
-            $("button").prop('disabled', true);
-        }
-
-        function ajaxindicatorstop() {
-            $("input").prop('disabled', false);
-            $("button").prop('disabled', false);
-            $('body').css('cursor', 'auto');
-        }
-    });
 
 
-
-   // $(document).ajaxStart(function () { ajaxindicatorstart(); }).ajaxStop(function () { ajaxindicatorstop() });
-   // $.ajax({ global: false, });
+        // $(document).ajaxStart(function () { ajaxindicatorstart(); }).ajaxStop(function () { ajaxindicatorstop() });
+        // $.ajax({ global: false, });
     </script>
 }

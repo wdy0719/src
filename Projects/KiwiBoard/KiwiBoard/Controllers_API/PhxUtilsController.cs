@@ -80,7 +80,7 @@ namespace KiwiBoard.Controllers_API
             if (!string.IsNullOrEmpty(stateXmlString))
             {
                 // write to cache.
-                this.WriteIscopeJobStateXmlCache(cachedXmlFile, stateXmlString).Wait();
+                this.WriteIscopeJobStateXmlCache(cachedXmlFile, stateXmlString);
             }
 
             return stateXmlString;
@@ -149,16 +149,12 @@ namespace KiwiBoard.Controllers_API
             return string.Format(HttpContext.Current.Server.MapPath(@"~/App_Data/{0}_{1}_iscopestate.xml.cache"), machineName, runtime);
         }
 
-        private Task<bool> WriteIscopeJobStateXmlCache(string filePath, string content)
+        private void WriteIscopeJobStateXmlCache(string filePath, string content)
         {
-            return Task.Run<bool>(() =>
+            lock (syncObj)
             {
-                lock (syncObj)
-                {
-                    File.WriteAllText(filePath, content);
-                    return true;
-                }
-            });
+                File.WriteAllText(filePath, content);
+            }
         }
     }
 

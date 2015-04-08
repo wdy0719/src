@@ -11,7 +11,14 @@ namespace KiwiBoard.Controllers
     {
         public ActionResult Index(string env = null)
         {
-            return View(new IScopeJobDiagnosticModel(env));
+            try
+            {
+                return View(new IScopeJobDiagnosticModel(env));
+            }
+            catch
+            {
+                return HttpNotFound();
+            }
         }
     }
 }
