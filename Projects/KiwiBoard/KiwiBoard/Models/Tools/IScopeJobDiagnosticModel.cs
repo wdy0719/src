@@ -9,24 +9,50 @@ namespace KiwiBoard.Models.Tools
 {
     public class IScopeJobDiagnosticModel
     {
-        public IScopeJobDiagnosticModel()
+        public IScopeJobDiagnosticModel(string environment = null)
         {
-            this.Cluster = "Bn2";
-            this.Environment = "KoboFrontend04-Test-Bn2";
-            this.Machines = this.GetIKIEMachines(this.Cluster, this.Environment);
+           var map = this.GetEnvironmentMachineMap(this.Cluster);
+
+           if (environment == null)
+           {
+               environment = this.Environments.First();
+           }
+
+           this.Machines = map[environment];
         }
 
-        public string Cluster { get; set; }
-        public string Environment { get; set; }
-        public string[] Machines { get; set; }
+        public string Cluster { get { return "Bn2"; } }
 
-        private string[] GetIKIEMachines(string cluster, string env)
+        public IEnumerable<string> Environments
         {
-            var machinesCSV = Path.Combine(Constants.ApGoldSrcRoot, cluster, env, "Machines.csv");
-            return File.ReadAllLines(machinesCSV)
-                .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith("#") && l.Split(',')[2] == "IKFE")
-                .Select(line => line.Split(',')[0])
-                .ToArray();
+            get
+            {
+                yield return "KoboFrontend04-Test-Bn2";
+                yield return "KoboFrontend02-Test-Bn2";
+            }
+        }
+
+        public IEnumerable<string> Machines { get; set; }
+
+        private IDictionary<string, IEnumerable<string>> GetEnvironmentMachineMap(string cluster)
+        {
+            var dict = new Dictionary<string, IEnumerable<string>>();
+            foreach (var env in this.Environments)
+            {
+                var machinesCSV = Path.Combine(Constants.ApGoldSrcRoot, "autopilotservice", cluster, env, "Machines.csv");
+
+
+                var machines = File.ReadAllLines(machinesCSV)
+                    .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith("#") && l.Split(',')[2] == "IKFE")
+                    .Select(line => line.Split(',')[0]);
+
+                if (machines.Count() != 0)
+                {
+                    dict.Add(env, machines);
+                }
+            }
+
+            return dict;
         }
     }
 }

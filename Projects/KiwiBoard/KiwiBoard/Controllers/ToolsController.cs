@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KiwiBoard.Models.Tools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,10 +9,9 @@ namespace KiwiBoard.Controllers
 {
     public class ToolsController : Controller
     {
-        // GET: Tools
-        public ActionResult Index()
+        public ActionResult Index(string env = null)
         {
-            return View();
+            return View(new IScopeJobDiagnosticModel(env));
         }
     }
 }

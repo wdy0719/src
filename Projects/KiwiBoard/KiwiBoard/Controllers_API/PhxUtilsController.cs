@@ -80,7 +80,7 @@ namespace KiwiBoard.Controllers_API
             if (!string.IsNullOrEmpty(stateXmlString))
             {
                 // write to cache.
-                this.WriteIscopeJobStateXmlCache(cachedXmlFile, stateXmlString).Start();
+                this.WriteIscopeJobStateXmlCache(cachedXmlFile, stateXmlString).Wait();
             }
 
             return stateXmlString;

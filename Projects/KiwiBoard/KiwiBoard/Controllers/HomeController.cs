@@ -13,12 +13,6 @@ namespace KiwiBoard.Controllers
             return View();
         }
 
-        public ContentResult Test()
-        {
-            string a = "";
-            var result = Hangfire.BackgroundJob.Enqueue(() => System.Threading.Thread.Sleep(1000*10));
-            return Content(result);
-        }
 
         public ActionResult About()
         {
