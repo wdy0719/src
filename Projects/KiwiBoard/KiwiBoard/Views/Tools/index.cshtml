@@ -11,7 +11,6 @@
                     <div class="input-group-btn">
                         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Environment: <span class="caret" /></button>
                         <ul class="dropdown-menu" role="menu" id="environmentMenu">
-                            <li><a href="~/Tools"><small>*</small></a></li>
                             <li class="divider"></li>
                             @foreach (var environment in @Model.Environments)
                             {
@@ -63,18 +62,27 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <ul class="nav nav-tabs" style="margin-top:10px">
-                <li role="presentation" class="active"><a href="#">Job State</a></li>
-                <li role="presentation" aria-disabled="true"><a href="#">JM Log</a></li>
+        <div class="row" style="padding:5px 15px 5px 15px;">
+            <ul id="detailsPanelTab" class="nav nav- nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#jobState" id="jobState-tab" role="tab" data-toggle="tab" aria-controls="jobState" aria-expanded="true">Job State</a></li>
+                <li role="presentation" class=""><a href="#jmLog" role="tab" id="jmLog-tab" data-toggle="tab" aria-controls="jmLog" aria-expanded="false">JM Log</a></li>
             </ul>
-
-            <div class="highlight" style="margin-top:5px">
-                <div class="clipboard">
-                    <button id="copy" class="btn btn-sm btn-default btn-clipboard" data-clipboard-target="code" title="Click to copy to clipboard."><small>Copy</small></button>
+            <div id="myTabContent highlight" class="tab-content">
+                <div role="tabpanel" class="tab-pane fade active in" id="jobState" aria-labelledby="home-tab">
+                    <div class="highlight" style="margin-top:5px">
+                        <div class="clipboard">
+                            <button id="copy" class="btn btn-sm btn-default btn-clipboard" data-clipboard-target="code" title="Click to copy to clipboard."><small>Copy</small></button>
+                        </div>
+                        <pre id="code" class="prettyprint lang-xml" style="min-height:300px">@Model.JobState</pre>
+                    </div>
                 </div>
-                <pre id="code" class="prettyprint lang-xml" style="min-height:300px"></pre>
+                <div role="tabpanel" class="tab-pane fade" id="jmLog" aria-labelledby="profile-tab">
+                    <div class="highlight" style="margin-top:5px">
+                        <pre class="prettyprint lang-xml" style="min-height:300px">Not implemented.</pre>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
 </div>

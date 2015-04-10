@@ -48,12 +48,14 @@ namespace KiwiBoard.BL
             catch (RuntimeException ex)
             {
                 var errorCode = PhxAutomationErrorCode.Unknown;
+                var errorMessage = ex.Message;
                 if (ex.Message.Contains("Can't get cluster name for machine"))
                 {
                     errorCode = PhxAutomationErrorCode.MachineNotFound;
+                    errorMessage = "Cannot find the machine in PHX domain.";
                 }
 
-                throw new PhxAutomationException(errorCode, ex.Message, ex);
+                throw new PhxAutomationException(errorCode, errorMessage, ex);
             }
             catch (Exception ex)
             {

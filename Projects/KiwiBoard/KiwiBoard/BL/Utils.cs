@@ -72,7 +72,7 @@ namespace KiwiBoard.BL
             return output;
         }
 
-        public static IDictionary<string, IEnumerable<string>> GetEnvironmentMachineMap()
+        public static IDictionary<string, string[]> GetEnvironmentMachineMap()
         {
             var cluster = WebConfigurationManager.AppSettings["ISCOPEJOBDIAGNOSTIC_CLUSTER"];
             var environments = WebConfigurationManager.AppSettings["ISCOPEJOBDIAGNOSTIC_ENVRIONMENT"].Split(',').Select(e => e.Trim()).ToArray();
@@ -80,9 +80,9 @@ namespace KiwiBoard.BL
             return GetEnvironmentMachineMap(cluster, environments);
         }
 
-        public static IDictionary<string, IEnumerable<string>> GetEnvironmentMachineMap(string cluster, string[] environments)
+        public static IDictionary<string, string[]> GetEnvironmentMachineMap(string cluster, string[] environments)
         {
-            var dict = new Dictionary<string, IEnumerable<string>>();
+            var dict = new Dictionary<string, string[]>();
             foreach (var env in environments)
             {
                 var machinesCSV = Path.Combine(Constants.ApGoldSrcRoot, "autopilotservice", cluster, env, "Machines.csv");
@@ -90,7 +90,7 @@ namespace KiwiBoard.BL
 
                 var machines = File.ReadAllLines(machinesCSV)
                     .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith("#") && l.Split(',')[2] == "IKFE")
-                    .Select(line => line.Split(',')[0]);
+                    .Select(line => line.Split(',')[0]).ToArray();
 
                 dict.Add(env, machines);
             }

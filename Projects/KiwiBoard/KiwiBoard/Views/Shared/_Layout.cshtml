@@ -7,6 +7,7 @@
     <title>@ViewBag.Title - ISCOPE Dashboard</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+
 </head>
 <body>
     <div class="navbar navbar-default navbar-fixed-top">
@@ -26,7 +27,7 @@
                 <ul class="nav navbar-nav" style="padding-left:60px">
                     <li class="active"><a href="~/Tools">Tools <span class="sr-only">(current)</span></a></li>
                 </ul>
-                <p class="nav navbar-text navbar-right" style="padding-right:60PX" >Hello, @User.Identity.Name !</p>
+                <p class="nav navbar-text navbar-right" style="padding-right:60PX">Hello, @User.Identity.Name !</p>
             </div><!-- /.navbar-collapse -->
             <div class="navbar-collapse collapse">
 
@@ -36,13 +37,41 @@
     <div class="container-fluid body-content" style="padding-left: 20px;padding-right:20px;padding-top:10px;padding-bottom:20px; border:thick;">
         @RenderBody()
     </div>
-    
+
     <footer class="navbar navbar-default navbar-fixed-bottom" style="position:fixed;overflow:hidden;bottom:0;min-height:30px !important;">
         <small>&copy; @DateTime.Now.Year - contact: <a href="mailto:v-dayow@microsoft.com">v-dayow@microsoft.com</a></small>
     </footer>
 
+    <div class="modal fade" id="ProcessingDialog" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    Processing...
+                </div>
+            </div>
+        </div>
+    </div>
+  
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
+    
     @RenderSection("scripts", required: false)
+
+    <script>
+        var ProcessingDialog;
+        ProcessingDialog = ProcessingDialog || (function () {
+            var processingDialog = $("#ProcessingDialog");
+            return {
+                show: function () {
+                    processingDialog.modal('show');
+                },
+                hide: function () {
+                    processingDialog.modal('hide');
+                },
+            };
+        })();
+    </script>
+
+    
 </body>
 </html>

@@ -1,0 +1,159 @@
+﻿@model KiwiBoard.Models.Tools.IScopeJobDiagnosticModel
+@{
+    ViewBag.Title = "JobDiagnostic";
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">IScope Job Diagnostic  <small><i>&nbsp;&nbsp;- fetch iscope job state from PHX machine.</i></small></></h3>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <form id="FetchJobStateForm" action="~/Tools/JobDiagnostic" method="post">
+                <div class=" col-sm-2">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Environment: <span class="caret" /></button>
+                            <ul class="dropdown-menu" role="menu" id="environmentMenu">
+                                <li class="divider"></li>
+                                @foreach (var environment in @Model.Environments)
+                                {
+                                        <li><a href="~/Tools/JobDiagnostic/@environment"><small>@environment</small></a></li>
+                                }
+
+                            </ul>
+                        </div>
+                        @Html.TextBoxFor(m => m.SelectedEnvironment, new { id = "environment", type = "text", @class = "form-control", @readonly = "readonly", title = "Select environment to get IKFE machine list." })
+                    </div>
+                </div>
+
+                <div class=" col-sm-2">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">Runtime:</span>
+                        @Html.TextBoxFor(m => m.SelectedRuntime, new { id = "runTime", type = "text", @class = "form-control", placeholder = "Runtime", data_toggle = "dropdown" })
+                        <ul class="dropdown-menu" role="menu" id="runtimeMenu">
+                            @foreach (var runtime in @Model.Runtimes)
+                            {
+                                    <li><a href="#"><small>@runtime</small></a></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <div class=" col-sm-2">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">Machine:</span>
+                        @Html.TextBoxFor(m => m.SelectedMachine, new { id = "machineName", type = "text", @class = "form-control", placeholder = "ex: BN4SCH103190147", data_toggle = "dropdown" })
+                        @if (Model.Machines != null && Model.Machines.Count() != 0)
+                                {
+                                <ul class="dropdown-menu" role="menu" id="machineMenu">
+                                    @foreach (var machine in @Model.Machines)
+                                        {
+                                        <li><a href="#"><small>@machine</small></a></li>
+                                        }
+                                </ul>
+                                }
+                    </div>
+                </div>
+
+                <div class=" col-sm-2">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">Job Id:</span>
+                        @Html.TextBoxFor(m => m.SelectedJobId, new { id = "jobId", type = "text", @class = "form-control", placeholder = "(empty to get all)" })
+                    </div>
+                </div>
+
+                <div class=" col-sm-2">
+                    <div class="input-group input-group-sm">
+                        <button class="btn btn-primary btn-sm" type="submit" id="getJobState">Go!</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="row" style="padding:5px 15px 5px 15px;">
+                <ul id="detailsPanelTab" class="nav nav- nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#jobState" id="jobState-tab" role="tab" data-toggle="tab" aria-controls="jobState" aria-expanded="true">Job State</a></li>
+                    <li role="presentation" class=""><a href="#jmLog" role="tab" id="jmLog-tab" data-toggle="tab" aria-controls="jmLog" aria-expanded="false">JM Log</a></li>
+                </ul>
+                <div id="myTabContent highlight" class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade active in" id="jobState" aria-labelledby="home-tab">
+                        <div class="highlight" style="margin-top:5px">
+                            <div class="clipboard">
+                                <button id="copy" class="btn btn-sm btn-default btn-clipboard" data-clipboard-target="code" title="Click to copy to clipboard."><small>Copy</small></button>
+                            </div>
+                            <pre class="prettyprint lang-xml" style="min-height:300px">@Model.JobState</pre>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="jmLog" aria-labelledby="profile-tab">
+                        <div class="highlight" style="margin-top:5px">
+                            <pre class="prettyprint lang-xml" style="min-height:300px">Not implemented.</pre>
+                        </div>
+                    </div>
+                </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+<style>
+    .clipboard {
+        position: relative;
+    }
+
+    .btn-clipboard {
+        right: 0px;
+        position: absolute;
+        z-index: 10;
+    }
+
+        .btn-clipboard.zeroclipboard-is-hover {
+            background-color: #eee;
+        }
+
+        .btn-clipboard.zeroclipboard-is-active {
+            background-color: #aaa;
+        }
+
+    .panel {
+        min-width: 310px;
+    }
+
+    .col-sm-2 {
+        width: 300px;
+        padding-right: 0px;
+        margin-bottom: 5px;
+    }
+</style>
+
+@section Scripts
+{
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            var clipboard = new ZeroClipboard($("#copy"), { moviePath: "Scripts/zeroclipboard.swf" });
+
+            clipboard.on("ready", function (readyEvent) {
+                // alert( "ZeroClipboard SWF is ready!" );
+                clipboard.on("aftercopy", function (event) {
+                    // alert("Copied text to clipboard: " + event.data["text/plain"]);
+                });
+            });
+
+            $(".dropdown-menu li a").click(function () {
+                var target = $(this).parent().parent().prev();
+                target.val($(this).text());
+                target.change();
+            });
+        });
+    </script>
+}
+
+
+
+
