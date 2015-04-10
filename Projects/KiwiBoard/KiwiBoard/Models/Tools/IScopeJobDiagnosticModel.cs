@@ -71,8 +71,7 @@ namespace KiwiBoard.Models.Tools
             {
                 lock (syncObj)
                 {
-                    EnvironmentMachineMap = new Dictionary<string, string[]>(Utils.GetEnvironmentMachineMap());
-                    EnvironmentMachineMap.Add("Unknown", new string[] { });
+                    EnvironmentMachineMap = Utils.GetEnvironmentMachineMap();
                 }
             }
 
@@ -82,7 +81,7 @@ namespace KiwiBoard.Models.Tools
 
             if (string.IsNullOrEmpty(this.SelectedEnvironment))
             {
-                this.SelectedEnvironment = "Unknown";
+                this.SelectedEnvironment = EnvironmentMachineMap.Keys.First();
             }
 
             if (string.IsNullOrEmpty(this.SelectedRuntime))

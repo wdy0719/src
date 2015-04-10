@@ -83,6 +83,8 @@ namespace KiwiBoard.BL
         public static IDictionary<string, string[]> GetEnvironmentMachineMap(string cluster, string[] environments)
         {
             var dict = new Dictionary<string, string[]>();
+            dict.Add("*", new string[] { });
+
             foreach (var env in environments)
             {
                 var machinesCSV = Path.Combine(Constants.ApGoldSrcRoot, "autopilotservice", cluster, env, "Machines.csv");

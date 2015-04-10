@@ -11,7 +11,6 @@
                     <div class="input-group-btn">
                         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Environment: <span class="caret" /></button>
                         <ul class="dropdown-menu" role="menu" id="environmentMenu">
-                            <li class="divider"></li>
                             @foreach (var environment in @Model.Environments)
                             {
                                 <li><a href="~/Tools?env=@environment"><small>@environment</small></a></li>
@@ -165,7 +164,7 @@
             });
 
             $(".dropdown-menu li a").click(function () {
-                var target = $(this).parent().parent().prev();
+                var target = $(this).parentsUntil(".input-group").parent().find("input");
                 target.val($(this).text());
                 target.change();
             });
@@ -182,8 +181,6 @@
                 $('body').css('cursor', 'auto');
             }
         });
-
-
 
         // $(document).ajaxStart(function () { ajaxindicatorstart(); }).ajaxStop(function () { ajaxindicatorstop() });
         // $.ajax({ global: false, });
