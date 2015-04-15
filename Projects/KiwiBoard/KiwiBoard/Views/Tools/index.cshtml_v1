@@ -33,7 +33,6 @@
                 </div>
             </div>
 
-            <!--
             <div class=" col-sm-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-addon">Machine:</span>
@@ -49,15 +48,13 @@
                     }
                 </div>
             </div>
-            -->
 
             <div class=" col-sm-2">
                 <div class="input-group input-group-sm">
                     <span class="input-group-addon">Job Id:</span>
-                    <input id="jobId" type="text" class="form-control" placeholder="">
+                    <input id="jobId" type="text" class="form-control" placeholder="(empty to get all)">
                 </div>
             </div>
-
             <div class=" col-sm-2">
                 <div class="input-group input-group-sm">
                     <button class="btn btn-primary btn-sm" type="button" id="getJobState">Go!</button>
@@ -66,32 +63,21 @@
         </div>
         <div class="row" style="padding:5px 15px 5px 15px;">
             <ul id="detailsPanelTab" class="nav nav- nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#jobStateTabPanel" id="jobStateTabPanel-tab" role="tab" data-toggle="tab" aria-controls="jobStateTabPanel" aria-expanded="true">Job State</a></li>
-                <li role="presentation" class=""><a href="#profileTabPanel" role="tab" id="profileTabPanel-tab" data-toggle="tab" aria-controls="profileTabPanel" aria-expanded="false">Job Profile</a></li>
-                <li role="presentation" class=""><a href="#feCslogTabPanel" role="tab" id="feCslogTabPanel-tab" data-toggle="tab" aria-controls="feCslogTabPanel" aria-expanded="false">Frondend CsLog</a></li>
-                <li role="presentation" class=""><a href="#beCslogTabPanel" role="tab" id="beCslogTabPanel-tab" data-toggle="tab" aria-controls="beCslogTabPanel" aria-expanded="false">Backend CsLog</a></li>
-             </ul>
-            <div id="myTabContent" class="tab-content">
-                <div role="tabpanel" class="tab-pane fade active in" id="jobStateTabPanel" aria-labelledby="jobStateTabPanel-tab">
+                <li role="presentation" class="active"><a href="#jobState" id="jobState-tab" role="tab" data-toggle="tab" aria-controls="jobState" aria-expanded="true">Job State</a></li>
+                <li role="presentation" class=""><a href="#jmLog" role="tab" id="jmLog-tab" data-toggle="tab" aria-controls="jmLog" aria-expanded="false">JM Log</a></li>
+            </ul>
+            <div id="myTabContent highlight" class="tab-content">
+                <div role="tabpanel" class="tab-pane fade active in" id="jobState" aria-labelledby="home-tab">
                     <div class="highlight" style="margin-top:5px">
                         <div class="clipboard">
                             <button id="copy" class="btn btn-sm btn-default btn-clipboard" data-clipboard-target="code" title="Click to copy to clipboard."><small>Copy</small></button>
                         </div>
-                        <pre id="code" style="min-height:300px">@Model.JobState</pre>
+                        <pre id="code" class="prettyprint lang-xml" style="min-height:300px">@Model.JobState</pre>
                     </div>
                 </div>
-                <div role="tabpanel" class="tab-pane fade in" id="profileTabPanel" aria-labelledby="profileTabPanel-tab">
+                <div role="tabpanel" class="tab-pane fade" id="jmLog" aria-labelledby="profile-tab">
                     <div class="highlight" style="margin-top:5px">
-                        <pre id="profile" style="min-height:300px"></pre>
-                    </div>
-                </div>
-                <div role="tabpanel" class="tab-pane fade in" id="feCslogTabPanel" aria-labelledby="feCslogTabPanel-tab">
-                    <div class="highlight" style="margin-top:5px">
-                        @Html.Partial("cslogs")
-                    </div>
-                </div>
-                <div role="tabpanel" class="tab-pane fade in" id="beCslogTabPanel" aria-labelledby="beCslogTabPanel-tab">
-                    <div class="highlight" style="margin-top:5px">
+                        <pre class="prettyprint lang-xml" style="min-height:300px">Not implemented.</pre>
                     </div>
                 </div>
             </div>
@@ -128,64 +114,36 @@
         padding-right: 0px;
         margin-bottom: 5px;
     }
-
-
 </style>
 
 @section Scripts
 {
-    <script src="~/Scripts/jquery.json-viewer.js"></script>
-    <script src="~/Scripts/jquery.blockUI.js"></script>
+
     <script>
         $(document).ready(function () {
-
-            var jobStateCache = {};
 
             function getJobState() {
                 var jobId = $.trim($("#jobId").val());
                 var machineName = $.trim($("#machineName").val());
                 var runTime = $.trim($("#runTime").val());
-                var environment = $.trim($("#environment").val());
-                var queryUrl = "/api/phxutils/GetJobStates?environment=" + environment + "&runtime=" + runTime + "&jobId=" + jobId;
+                var queryUrl = "/api/phxutils/iscopejobstate?machineName=" + machineName + "&runtime=" + runTime;
 
-                jobStateCache = null;
-                $("#code").text("Processing, please wait...");
-                $("#profile").text("Processing, please wait...");
+                if (jobId != "") {
+                    queryUrl += "&jobId=" + jobId;
+                }
+
+                $("#code").text("");
                 ajaxindicatorstart();
-
                 $.get(queryUrl, function (data) {
+
                 }).done(function (data) {
-                    jobStateCache = data;
-                    if (jobStateCache == null) {
-                        $("#code").text("Not Found.");
-                        return;
-                    }
-                    $("#code").jsonViewer(jobStateCache);
+
+                    $("#code").text(data);
+
                 }).fail(function (data) {
                     $("#code").text("ERROR: (" + data.status + ") " + data.statusText + " " + data.responseText);
                 }).always(function () {
                     ajaxindicatorstop();
-                    getProfile();
-                });
-            }
-
-            function getProfile() {
-                if (jobStateCache == null) {
-                    $("#profile").text("");
-                    return;
-                }
-
-                var jobId = jobStateCache.Guid;
-                var runTime = $.trim($("#runTime").val());
-                var environment = $.trim($("#environment").val());
-                var queryUrl = "/api/phxutils/GetProfile?apCluster=" + jobStateCache.TargetAPCluster + "&cosmosCluster=" + jobStateCache.TargetCosmosCluster + "&runtime=" + jobStateCache.Runtime.Value + "&runtimeCodeName=" + jobStateCache.Runtime.Dereferenced + "&jobId=" + jobStateCache.Guid;
-
-                $("#profile").text("Processing, please wait...");
-                $.get(queryUrl, function () { })
-                .done(function (data) {
-                    $("#profile").text(data);
-                }).error(function (err) {
-                    $("#profile").text(err);
                 });
             }
 
@@ -212,7 +170,7 @@
             });
 
             function ajaxindicatorstart() {
-                //$('body').css('cursor', 'wait');
+                $('body').css('cursor', 'wait');
                 $("input").prop('disabled', true);
                 $("button").prop('disabled', true);
             }
@@ -220,7 +178,7 @@
             function ajaxindicatorstop() {
                 $("input").prop('disabled', false);
                 $("button").prop('disabled', false);
-                //$('body').css('cursor', 'auto');
+                $('body').css('cursor', 'auto');
             }
         });
 

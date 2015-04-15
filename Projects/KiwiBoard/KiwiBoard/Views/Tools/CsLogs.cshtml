@@ -1,0 +1,32 @@
+﻿<div id="CsLogView"></div>
+
+<button id="a" type="button"></button>
+
+@section Scripts
+{
+<script>
+
+    $(function () {
+
+        $("#a").click(function () {
+
+            var aaa = $("#CsLogView");
+            aaa.bs_grid({
+                ajaxFetchDataURL: "http://www.pontikis.net/labs/bs_grid/demo/ajax_fetch_page_data.php",
+                columns: [
+               { field: "customer_id", header: "Code", visible: "no" },
+               { field: "lastname", header: "Lastname" },
+               { field: "firstname", header: "Firstname" },
+               { field: "email", header: "Email", visible: "no", "sortable": "no" },
+               { field: "gender", header: "Gender" },
+               { field: "date_updated", header: "Date updated" }
+                ],
+            });
+
+        });
+    });
+  
+
+ 
+</script>
+    }

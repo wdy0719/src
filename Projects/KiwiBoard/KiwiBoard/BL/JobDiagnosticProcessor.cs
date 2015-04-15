@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Web;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Entities = KiwiBoard.Entities;
 
 namespace KiwiBoard.BL
 {
@@ -12,45 +14,125 @@ namespace KiwiBoard.BL
     {
         private static object syncObj = new object();
 
-        public static JobDiagnosticProcessor Instance = new JobDiagnosticProcessor();
-
-        public string FetchIscopeJobState(string machineName, string runtime, string jobId = null)
+        static JobDiagnosticProcessor()
         {
-            if (string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(runtime))
+            Instance = new JobDiagnosticProcessor();
+        }
+
+        public static JobDiagnosticProcessor Instance = null;
+
+        public JobDiagnosticProcessor()
+        {
+            this.EnvironmentMachineMap = Utils.GetEnvironmentMachineMap();
+            this.jobStateCache = MemoryCache.Default;
+        }
+
+        private ObjectCache jobStateCache;
+
+        public IDictionary<string, string[]> EnvironmentMachineMap { get; set; }
+
+        public Entities.JobStates FetchAllIscopeJobState(string environment, string runtime)
+        {
+            if (string.IsNullOrEmpty(environment))
             {
                 throw new ArgumentNullException();
             }
 
-            var cachedXmlFile = this.GetCachedIscopeJobStateXmlPath(machineName, runtime);
+            var cacheName = string.Join("_", environment, runtime);
 
-            if (string.IsNullOrEmpty(jobId))
-            {
-                return this.ForceFetchAllJobStates(machineName, runtime);
-            }
-            else
-            {
-                // parse from cache first
-                var desiredJobSate = this.TryParseDesiredJobStateFromCachedFile(cachedXmlFile, jobId);
-                if (desiredJobSate != null)
-                {
-                    return desiredJobSate.ToString();
-                }
-                else
-                {
-                    // update cache
-                    var downloadedXml = this.ForceFetchAllJobStates(machineName, runtime);
-                    var found = this.TryParseDesiredJobStateFromStateXml(downloadedXml, jobId);
-                    if (found == null)
-                    {
-                        throw new JobNotFoundException("Job state not found in state.xml.");
-                    }
+            var machines = this.EnvironmentMachineMap.First(e => e.Key.Equals(environment, StringComparison.InvariantCultureIgnoreCase)).Value;
 
-                    return found.ToString();
-                }
+            var stateXml = PhxAutomation.Instance.FetchIscopeJobStateXml(machines, runtime);
+            stateXml = string.Join(Environment.NewLine, stateXml.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Where(l => !l.StartsWith("<?xml")));
+            stateXml = string.Format("<JobStates Environment=\"{0}\">", environment) + stateXml + "</JobStates>";
+            var jobStates = Utils.XmlDeserialize<Entities.JobStates>(stateXml);
+
+            this.jobStateCache[cacheName] = jobStates;
+
+            return jobStates;
+        }
+
+        public Entities.JobStatesJobsJob FetchIscopeJobState(string environment, string runtime, string jobId)
+        {
+            if (string.IsNullOrEmpty(environment) || string.IsNullOrEmpty(runtime) || string.IsNullOrEmpty(jobId))
+            {
+                throw new ArgumentNullException();
             }
+
+            var cacheName = string.Join("_", environment, runtime);
+
+            Entities.JobStatesJobsJob result = this.FetchJobStateFromCache(cacheName, jobId);
+
+            if (result == null)
+            {
+                this.FetchAllIscopeJobState(environment, runtime);
+
+                result = this.FetchJobStateFromCache(cacheName, jobId);
+            }
+
+            return result;
+        }
+
+        public string FetchJobProfile(Entities.JobStatesJobsJob jobState)
+        {
+            if (jobState == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            return this.FetchJobProfile(jobState.TargetAPCluster, jobState.TargetCosmosCluster, jobState.Runtime.Value, jobState.Runtime.Dereferenced, jobState.Guid);
+        }
+
+        public string FetchJobProfile(string apCluster, string cosmosCluster, string runtime, string runtimeCodeName, string jobId)
+        {
+            if (string.IsNullOrEmpty(apCluster) || string.IsNullOrEmpty(cosmosCluster) || string.IsNullOrEmpty(runtime) || string.IsNullOrEmpty(runtimeCodeName) || string.IsNullOrEmpty(jobId))
+            {
+                throw new ArgumentNullException();
+            }
+
+            var jmMachines = Utils.GetFunctionMachines(apCluster, cosmosCluster, "JM");
+            var profileTxt = PhxAutomation.Instance.FetchProfileLog(cosmosCluster, runtime, runtimeCodeName, jobId, jmMachines);
+
+            return profileTxt;
+        }
+
+        public IEnumerable<Entities.CsLog> FetchCsLogs(string apCluster, string cosmosCluster, DateTime startTime, DateTime endTime, string searchPattern = "*")
+        {
+            if (string.IsNullOrEmpty(apCluster) || string.IsNullOrEmpty(cosmosCluster) || startTime == null || endTime == null || endTime <= startTime)
+            {
+                throw new ArgumentException();
+            }
+
+            var jmMachines = Utils.GetFunctionMachines(apCluster, cosmosCluster, "JM");
+            return PhxAutomation.Instance.FetchCsLogEntries(startTime, endTime, searchPattern, jmMachines);
+        }
+
+        public IEnumerable<Entities.CsLog> FetchJmDispatcherLog(string apCluster, string cosmosCluster, DateTime startTime, DateTime endTime)
+        {
+            return this.FetchCsLogs(apCluster, cosmosCluster, startTime, endTime, "cosmosErrorLog_JobManagerDispatcher.exe*");
         }
 
         #region Private methods
+        private Entities.JobStatesJobsJob FetchJobStateFromCache(string cacheName, string jobId)
+        {
+            Entities.JobStatesJobsJob result = null;
+
+            var cachedJobs = this.jobStateCache[cacheName] as Entities.JobStates;
+            if (cachedJobs != null)
+            {
+                foreach (var jobs in cachedJobs.Jobs)
+                {
+                    result = jobs.Job.FirstOrDefault(j => j.Guid.Equals(jobId, StringComparison.InvariantCultureIgnoreCase));
+                    if (result != null)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Force get job state.xml from PHX machine and put in cache. returns XML content.
         /// </summary>

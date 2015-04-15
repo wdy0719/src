@@ -7,12 +7,21 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using KiwiBoard;
 using KiwiBoard.Controllers;
 using KiwiBoard.BL;
+using System.Xml.Linq;
+using KiwiBoard.Controllers_API;
+using System.Text.RegularExpressions;
 
 namespace KiwiBoard.Tests.Controllers
 {
     [TestClass]
     public class Test
     {
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext context)
+        {
+            PhxAutomation.Instance = new PhxAutomation();
+            JobDiagnosticProcessor.Instance = new JobDiagnosticProcessor();
+        }
 
         [TestMethod]
         public void PhxAutomationTest()
@@ -23,16 +32,42 @@ namespace KiwiBoard.Tests.Controllers
 
 
         [TestMethod]
-        public void Index()
+        public void FetchIscopeJobStateXml()
         {
-            // Arrange
-            HomeController controller = new HomeController();
+            var test = PhxAutomation.Instance.FetchIscopeJobStateXml(new string[] { "BN4SCH103190147", "BN4SCH103190148" }, "IScope_Beta");
 
-            // Act
-            ViewResult result = controller.Index() as ViewResult;
+            var result = string.Join(Environment.NewLine, test.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Where(l => !l.StartsWith("<?xml")));
+
+            result = "<JobStates Environment=\"XXX\">" + result + "</JobStates>";
+          
+            // Assert
+            Assert.IsNotNull(test);
+        }
+
+        [TestMethod]
+        public void FetchProfileLog()
+        {
+            var test = PhxAutomation.Instance.FetchProfileLog("kobo04-test-bn2", "iscope_beta", "nazhan_runtime_0319", "076EC92E-A8F5-4E73-ACC1-180102B0747F-", "BN4SCH103200743", "BN4SCH103200843");
 
             // Assert
-            Assert.IsNotNull(result);
+            Assert.IsNotNull(test);
+        }
+
+        [TestMethod]
+        public void GetProfile()
+        {
+            var test = JobDiagnosticProcessor.Instance.FetchJobProfile("bn2", "kobo04-test-bn2", "iscope_beta", "nazhan_runtime_0319", "716dce6f-8931-4efd-a880-20ef6844f029");
+
+            // Assert
+            Assert.IsNotNull(test);
+        }
+
+        [TestMethod]
+        public void FetchJmDispatcherLog()
+        {
+            var test = JobDiagnosticProcessor.Instance.FetchJmDispatcherLog("bn2", "kobo04-test-bn2", DateTime.Parse("04/13/2015 15:40:00"), DateTime.Parse("04/13/2015 15:45:00"));
+
+            Assert.IsNotNull(test);
         }
     }
 }

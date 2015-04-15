@@ -74,16 +74,12 @@ namespace KiwiBoard.BL
 
         public static IDictionary<string, string[]> GetEnvironmentMachineMap()
         {
-            var cluster = WebConfigurationManager.AppSettings["ISCOPEJOBDIAGNOSTIC_CLUSTER"];
-            var environments = WebConfigurationManager.AppSettings["ISCOPEJOBDIAGNOSTIC_ENVRIONMENT"].Split(',').Select(e => e.Trim()).ToArray();
-
-            return GetEnvironmentMachineMap(cluster, environments);
+            return GetEnvironmentMachineMap(Constants.ApCluster, Constants.Environments);
         }
 
         public static IDictionary<string, string[]> GetEnvironmentMachineMap(string cluster, string[] environments)
         {
             var dict = new Dictionary<string, string[]>();
-            dict.Add("*", new string[] { });
 
             foreach (var env in environments)
             {
@@ -98,6 +94,49 @@ namespace KiwiBoard.BL
             }
 
             return dict;
+        }
+
+        public static string[] GetFunctionMachines(string cluster, string environment, string machineFunction)
+        {
+            var machinesCSV = Path.Combine(Constants.ApGoldSrcRoot, "autopilotservice", cluster, environment, "Machines.csv");
+            return File.ReadAllLines(machinesCSV)
+                  .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith("#") && l.Split(',')[2] == machineFunction)
+                  .Select(line => line.Split(',')[0]).ToArray();
+        }
+
+        public static T XmlDeserialize<T>(string xmlString) where T : class
+        {
+            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(Entities.JobStates));
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlString)))
+            {
+                return serializer.Deserialize(stream) as T;
+            }
+        }
+
+        public static string XmlSerialize(object entity)
+        {
+            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(Entities.JobStates));
+            using (var stream = new MemoryStream())
+            using (var streamReader = new StreamReader(stream))
+            {
+                serializer.Serialize(stream, entity);
+                stream.Flush();
+                return streamReader.ReadToEnd();
+            }
+        }
+
+        public static T[] ParseCsvLog<T>(string csvText)
+        {
+            if (string.IsNullOrEmpty(csvText))
+            {
+                throw new ArgumentNullException();
+            }
+
+            using (TextReader sr = new StringReader(csvText))
+            using (var reader = new CsvHelper.CsvReader(sr))
+            {
+                return reader.GetRecords<T>().ToArray();
+            }
         }
     }
 }

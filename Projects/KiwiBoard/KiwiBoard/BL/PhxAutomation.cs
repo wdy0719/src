@@ -39,7 +39,63 @@ namespace KiwiBoard.BL
 
         public string FetchIscopeJobStateXml(string machineName, string runtime)
         {
-            var script = string.Format("\"{0}\" | Read-PhxFile \"data\\iscopehost\\{1}\\state.xml\"", machineName, runtime);
+            return this.FetchIscopeJobStateXml(new string[] { machineName }, runtime);
+        }
+
+        public string FetchIscopeJobStateXml(string[] machinesName, string runtime)
+        {
+            var commands = string.Format("Read-PhxFile \"data\\iscopehost\\{0}\\state.xml\"", runtime);
+
+            return this.RunScriptOnMachines(machinesName, commands);
+        }
+
+        public string FetchProfileLog(string environment, string runtime, string runtimeCodeName, string jobId, params string[] machines)
+        {
+            var commands = string.Format("Read-PhxFile \"data\\JobManagerService\\{0}\\{1}\\{2}\\profile_{{{3}}}.txt\"", environment, runtime, runtimeCodeName, jobId);
+
+            return this.RunScriptOnMachines(machines, commands);
+        }
+
+        public string FetchCsLog(DateTime startTime, DateTime endTime, string searchPattern, params string[] machines)
+        {
+            var CsLogSearchPattern = string.Format("../Cslogs/local/{0}", searchPattern);
+            var commands = string.Format("Read-PhxLogs '{0}' -Start '{1}' -End '{2}' -UpdateCache", CsLogSearchPattern, startTime.ToString(), endTime.ToString());
+
+            return this.RunScriptOnMachines(machines, commands);
+        }
+
+        public IEnumerable<Entities.CsLog> FetchCsLogEntries(DateTime startTime, DateTime endTime, string searchPattern, params string[] machines)
+        {
+            var CsLogSearchPattern = string.Format("../Cslogs/local/{0}", searchPattern);
+            var commands = string.Format("Read-PhxLogs '{0}' -Start '{1}' -End '{2}' -UpdateCache", CsLogSearchPattern, startTime.ToString(), endTime.ToString());
+
+            var script = string.Format("{0} | {1}", string.Join(",", machines.Select(m => "'" + m + "'")), commands);
+
+            try
+            {
+                return this.RunScript<Entities.CsLog>(script);
+            }
+            catch (RuntimeException ex)
+            {
+                var errorCode = PhxAutomationErrorCode.Unknown;
+                var errorMessage = ex.Message;
+                if (ex.Message.Contains("Can't get cluster name for machine"))
+                {
+                    errorCode = PhxAutomationErrorCode.MachineNotFound;
+                    errorMessage = "Cannot find specified machine in PHX domain.";
+                }
+
+                throw new PhxAutomationException(errorCode, errorMessage, ex);
+            }
+            catch (Exception ex)
+            {
+                throw new PhxAutomationException(PhxAutomationErrorCode.Unknown, ex.Message, ex);
+            }
+        }
+
+        private string RunScriptOnMachines(string[] machines, string PhxCommands)
+        {
+            var script = string.Format("{0} | {1}", string.Join(",", machines.Select(m => "'" + m + "'")), PhxCommands);
 
             try
             {
@@ -52,7 +108,7 @@ namespace KiwiBoard.BL
                 if (ex.Message.Contains("Can't get cluster name for machine"))
                 {
                     errorCode = PhxAutomationErrorCode.MachineNotFound;
-                    errorMessage = "Cannot find the machine in PHX domain.";
+                    errorMessage = "Cannot find specified machine in PHX domain.";
                 }
 
                 throw new PhxAutomationException(errorCode, errorMessage, ex);
@@ -81,6 +137,36 @@ namespace KiwiBoard.BL
                 }
 
                 return result.ToString();
+            }
+        }
+
+        private IEnumerable<T> RunScript<T>(string script)
+        {
+            lock (this)
+            {
+                var result = new List<T>();
+
+                psInstance.AddScript("$error.clear();");
+                psInstance.AddScript(script);
+                var output = psInstance.Invoke();
+
+                foreach (PSObject outputItem in output)
+                {
+                    if (outputItem != null)
+                    {
+                        var tmp = Activator.CreateInstance<T>();
+                        var tmpType = tmp.GetType();
+
+                        foreach (var prop in outputItem.Properties)
+                        {
+                            tmpType.GetProperty(prop.Name).SetValue(tmp, prop.Value);
+                        }
+
+                        result.Add(tmp);
+                    }
+                }
+
+                return result;
             }
         }
 

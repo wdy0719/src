@@ -9,7 +9,10 @@ namespace KiwiBoard
         public static void RegisterBundles(BundleCollection bundles)
         {
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery-{version}.js"));
+                        "~/Scripts/jquery-{version}.js",
+                        "~/Scripts/jquery.json-viewer.js",
+                        "~/Scripts/jquery.blockUI.js",
+                        "~/Scripts/jquery.bs_grid.js", "~/Scripts/jquery.bs_grid.en.min.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                         "~/Scripts/jquery.validate*"));
@@ -25,6 +28,7 @@ namespace KiwiBoard
                       "~/Scripts/ZeroClipboard.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
+                      "~/Content/jquery.*",
                       "~/Content/bootstrap.css",
                       "~/Content/site.css"));
         }

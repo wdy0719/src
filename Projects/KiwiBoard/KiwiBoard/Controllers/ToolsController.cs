@@ -20,5 +20,17 @@ namespace KiwiBoard.Controllers
                 return HttpNotFound();
             }
         }
+
+        public ActionResult CsLogs(string env, DateTime? startTime, DateTime? endTime, string searchPattern)
+        {
+            try
+            {
+                return View();
+            }
+            catch
+            {
+                return HttpNotFound();
+            }
+        }
     }
 }

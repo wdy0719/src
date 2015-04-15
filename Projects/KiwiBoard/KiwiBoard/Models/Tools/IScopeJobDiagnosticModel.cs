@@ -49,7 +49,9 @@ namespace KiwiBoard.Models.Tools
         {
             try
             {
-                this.JobState = JobDiagnosticProcessor.Instance.FetchIscopeJobState(this.SelectedMachine, this.SelectedRuntime, this.SelectedJobId);
+                var jobState = JobDiagnosticProcessor.Instance.FetchIscopeJobState(this.SelectedEnvironment, this.SelectedRuntime, this.SelectedJobId);
+
+                this.JobState = jobState == null ? string.Empty : Utils.XmlSerialize(jobState);
             }
             catch (ArgumentException)
             {
