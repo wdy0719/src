@@ -10,7 +10,7 @@ namespace KiwiBoard.Models.Tools
     {
         public CsLogViewModel(string cosmosCluster, DateTime startTime, DateTime endTime, string searchPattern)
         {
-            this.ApCluster = Constants.ApCluster;
+           // this.ApCluster = Settings.ApCluster;
         }
 
         public string ApCluster { get; set; }

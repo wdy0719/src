@@ -25,7 +25,14 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
                 <ul class="nav navbar-nav" style="padding-left:60px">
-                    <li class="active"><a href="~/Tools">Tools <span class="sr-only">(current)</span></a></li>
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Diagnostic Tools <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="~/Tools/JobStateView"><small>&nbsp;&nbsp;Job State Viewer</small></a></li>
+                            <li><a href="#"><small>&nbsp;&nbsp;Job Profile</small></a></li>
+                            <li><a href="#"><small>&nbsp;&nbsp;CsLog Viewer</small></a></li>
+                        </ul>
+                    </li>
                 </ul>
                 <p class="nav navbar-text navbar-right" style="padding-right:60PX">Hello, @User.Identity.Name !</p>
             </div><!-- /.navbar-collapse -->
@@ -54,6 +61,7 @@
   
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/bootstraptable")
     
     @RenderSection("scripts", required: false)
 
@@ -72,6 +80,5 @@
         })();
     </script>
 
-    
 </body>
 </html>

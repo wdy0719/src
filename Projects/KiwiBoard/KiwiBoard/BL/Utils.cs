@@ -72,33 +72,24 @@ namespace KiwiBoard.BL
             return output;
         }
 
-        public static IDictionary<string, string[]> GetEnvironmentMachineMap()
-        {
-            return GetEnvironmentMachineMap(Constants.ApCluster, Constants.Environments);
-        }
-
-        public static IDictionary<string, string[]> GetEnvironmentMachineMap(string cluster, string[] environments)
+        public static IDictionary<string, string[]> GetEnvironmentMachineMap(string environmentSetting)
         {
             var dict = new Dictionary<string, string[]>();
-
-            foreach (var env in environments)
+            foreach (var envSetting in environmentSetting.Split(','))
             {
-                var machinesCSV = Path.Combine(Constants.ApGoldSrcRoot, "autopilotservice", cluster, env, "Machines.csv");
-
-
-                var machines = File.ReadAllLines(machinesCSV)
-                    .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith("#") && l.Split(',')[2] == "IKFE")
-                    .Select(line => line.Split(',')[0]).ToArray();
-
-                dict.Add(env, machines);
+                var apcluster = envSetting.Split('|')[0].Trim();
+                var cosmoscluter = envSetting.Split('|')[1].Trim();
+                var machineFunction = envSetting.Split('|')[2].Trim();
+                dict.Add(cosmoscluter, GetFunctionMachines(apcluster, cosmoscluter, machineFunction));
             }
 
             return dict;
         }
 
-        public static string[] GetFunctionMachines(string cluster, string environment, string machineFunction)
+        public static string[] GetFunctionMachines(string apcluster, string cosmoscluter, string machineFunction)
         {
-            var machinesCSV = Path.Combine(Constants.ApGoldSrcRoot, "autopilotservice", cluster, environment, "Machines.csv");
+            var machinesCSV = Path.Combine(Settings.ApGoldSrcRoot, "autopilotservice", apcluster, cosmoscluter, "Machines.csv");
+
             return File.ReadAllLines(machinesCSV)
                   .Where(l => !string.IsNullOrEmpty(l) && !l.StartsWith("#") && l.Split(',')[2] == machineFunction)
                   .Select(line => line.Split(',')[0]).ToArray();
@@ -122,20 +113,6 @@ namespace KiwiBoard.BL
                 serializer.Serialize(stream, entity);
                 stream.Flush();
                 return streamReader.ReadToEnd();
-            }
-        }
-
-        public static T[] ParseCsvLog<T>(string csvText)
-        {
-            if (string.IsNullOrEmpty(csvText))
-            {
-                throw new ArgumentNullException();
-            }
-
-            using (TextReader sr = new StringReader(csvText))
-            using (var reader = new CsvHelper.CsvReader(sr))
-            {
-                return reader.GetRecords<T>().ToArray();
             }
         }
     }

@@ -27,9 +27,9 @@ namespace KiwiBoard.BL
             psInstance = System.Management.Automation.PowerShell.Create(RunspaceMode.NewRunspace);
 
             psInstance.AddScript("Set-ExecutionPolicy -ExecutionPolicy Bypass -Force");
-            psInstance.AddScript(string.Format(@"Import-Module '{0}'", Constants.CoreXTAutomationModule));
-            psInstance.AddScript(string.Format(@"Import-Module '{0}'", Constants.PhxAutomationModule));
-            psInstance.AddScript(@"Set-ApGoldRoot -Path " + Constants.ApGoldSrcRoot);
+            psInstance.AddScript(string.Format(@"Import-Module '{0}'", Settings.CoreXTAutomationModule));
+            psInstance.AddScript(string.Format(@"Import-Module '{0}'", Settings.PhxAutomationModule));
+            psInstance.AddScript(@"Set-ApGoldRoot -Path " + Settings.ApGoldSrcRoot);
             psInstance.Invoke();
             if (psInstance.Streams.Error.Count > 0)
             {

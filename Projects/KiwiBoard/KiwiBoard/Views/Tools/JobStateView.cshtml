@@ -1,0 +1,317 @@
+﻿@model KiwiBoard.Models.Tools.JobStateViewModel
+@{
+    ViewBag.Title = "Job States";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Job State Viewer  <small><i>&nbsp;&nbsp;- fetch iscope job states.</i></small></></h3>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Environment: <span class="caret" /></button>
+                        <ul class="dropdown-menu" role="menu" id="environmentMenu">
+                            @foreach (var environment in @KiwiBoard.BL.Settings.Environments)
+                            {
+                                <li><a href="~/Tools/JobStateView/@environment"><small>@environment</small></a></li>
+                            }
+                        </ul>
+                    </div>
+                    <input id="environment" type="text" class="form-control" readonly="readonly" value="@Model.Environment" title="Select environment to get IKFE machine list.">
+                </div>
+            </div>
+
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Runtime:</span>
+                    <input id="runTime" type="text" class="form-control" placeholder="Runtime" data-toggle="dropdown" value="@KiwiBoard.BL.Settings.Runtimes.First()">
+                    <ul class="dropdown-menu" role="menu" id="runtimeMenu" onclick="@Layout='a'">
+                        @foreach (var runtime in @KiwiBoard.BL.Settings.Runtimes)
+                        {
+                            <li><a href="#"><small>@runtime</small></a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Machine:</span>
+                    <input id="machineName" type="text" class="form-control" placeholder="ex: BN4SCH103190147" data-toggle="dropdown" value="*">
+                    <ul class="dropdown-menu" role="menu" id="machineMenu">
+                        @foreach (var machine in Model.Machines)
+                        {
+                            <li><a href="#"><small>@machine</small></a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Job Id:</span>
+                    <input id="jobId" type="text" placeholder="(*) to get all jobs" class="form-control" value="*">
+                </div>
+            </div>
+
+            <div class=" col-sm-2">
+                <div class="input-group input-group-sm">
+                    <button class="btn btn-primary btn-sm" type="button" id="btn_Fetch">Fetch</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="padding:5px 15px 5px 15px;">
+            <table id="table_jobState" class="bootstrap-table"
+                   data-toggle="table"
+                   @*data-url="@Url.Content( string.Format("~/api/PhxUtils/Test_JobStates/{0}/{1}",Model.Environment,Model.Runtime ))"*@
+                   data-search="true"
+                   data-height="400"
+                   @*data-click-to-select="true"
+                   data-single-select="true"*@
+                   data-pagination="true"
+                   data-row-style="rowStyle"
+                   data-sort-name="DateTime"
+                   data-sort-order="desc"
+                   @*data-search-align="left"*@>
+                <thead>
+                    <tr>
+                        @*@foreach (var prop in typeof(KiwiBoard.Entities.JobStatesJobsJob).GetProperties())
+                    {
+                        <th data-field="@prop.Name" data-sortable="true">@prop.Name</th>
+                    }*@
+                        <th data-field="DateTime" data-sortable="true">DateTime</th>
+                        <th data-field="Guid">Job Id</th>
+                        <th data-field="JobType">Job Type</th>
+                        <th data-field="JobSubType">Job SubType</th>
+                        <th data-field="DereferencedRuntime">Dereferenced Runtime</th>
+                        <th data-field="UserName">User Name</th>
+                        <th data-field="ClientMachine">Client Machine</th>
+                        <th data-field="MachineName">Machine</th>
+                        <th data-field="TargetCosmosCluster">Cosmos Cluster</th>
+                        <th data-field="legacyVC">Legacy VC</th>
+                        <th data-field="ProfileLog">Profile</th>
+                    </tr>
+                </thead>
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Job State Details</h3>
+    </div>
+    <div class="panel-body">
+        <div class="row" style="padding:5px 15px 5px 15px;">
+            <table id="DetailsTable"
+                   class="bootstrap-table bgcolor"
+                   data-toggle="table"
+                   data-card-view="true">
+                <thead>
+                    <tr>
+                        <th data-field="Guid">Job Id:</th>
+                        <th data-field="Script">Script:</th>
+                        <th data-field="Scopeexe">Execution (SCOPE.EXE)</th>
+                        <th data-field="Exception">Exception:</th>
+                        <th data-field="Stages_0">Stages_0:</th>
+                        <th data-field="Stages_1">Stages_1:</th>
+                        <th data-field="Stages_2">Stages_2:</th>
+                        <th data-field="Stages_3">Stages_3:</th>
+                        <th data-field="Stages_4">Stages_4:</th>
+                        <th data-field="Stages_5">Stages_5:</th>
+                        <th data-field="Stages_6">Stages_6:</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .panel {
+        min-width: 310px;
+    }
+
+    .col-sm-2 {
+        width: 300px;
+        padding-right: 0px;
+        margin-bottom: 5px;
+    }
+
+    .card-view .title {
+        min-width: 120px !important;
+    }
+
+    .card-view .value {
+        white-space: pre-wrap; /* css-3 */
+        white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+        white-space: -pre-wrap; /* Opera 4-6 */
+        white-space: -o-pre-wrap; /* Opera 7 */
+        word-wrap: break-word; /* Internet Explorer 5.5+ */
+        display: block;
+        padding-left: 40px;
+        margin-bottom: 10px;
+        border: 1px solid rgb(221, 221, 221);*/
+    }
+
+    .card-view {
+        max-width: 100% !important;
+        line-height: 1.5 !important;
+    }
+
+
+    .bootstrap-table {
+        color: #555 !important;
+        font-size: 11.5px;
+        font-weight: 100;
+    }
+
+    .fixed-table-header {
+        background-color: #f5f5f5;
+        line-height: 0.7 !important;
+        font-weight: bold;
+        height: 35px;
+    }
+
+    .fixed-table-body td {
+        font-weight: 100;
+        line-height: 0.7 !important;
+        white-space: nowrap;
+    }
+
+    .bgcolor {
+        background-color:#f5f5f5;
+    } 
+</style>
+
+@section Scripts
+{
+    @*<script src="~/Content/bootstrap-table/extensions/flatJSON/bootstrap-table-flatJSON.js"></script>*@
+    @*<script src="~/Content/bootstrap-table/extensions/filter/bootstrap-table-filter.min.js"></script>*@
+
+    <script>
+        $(document).ready(function () {
+
+            var jobStateTable = $('#table_jobState');
+            var detailsTable = $('#DetailsTable');
+
+            function FetchJobStates() {
+                var jobId = $.trim($("#jobId").val());
+                var machine = $.trim($("#machineName").val());
+                var runTime = $.trim($("#runTime").val());
+                var environment = $.trim($("#environment").val());
+                machine= machine==""||machine=="*"?"all":machine;
+                jobId= jobId==""||jobId=="*"?"all":jobId;
+                var queryUrl = "/api/phxutils/JobStates/" + environment + "/" + runTime+"/"+machine+"/"+jobId;
+
+                ajaxindicatorstart();
+                jobStateTable.bootstrapTable('showLoading');
+                $.getJSON(queryUrl, function () { })
+                    .done(function (data) {
+                        var jobs = FlatJobStates(data);
+                        jobStateTable.bootstrapTable('load', jobs);
+                    })
+                    .error(function(err){
+                        jobStateTable.bootstrapTable('load', {});
+                    })
+                    .always(function () {
+                        jobStateTable.bootstrapTable('hideLoading');
+                        ajaxindicatorstop();
+                    });
+            }
+
+            function FlatJobStates(jobStates) {
+                var flagJobs = [];
+
+                if (jobStates == null) {
+                    return flagJobs;
+                }
+
+                $.each(jobStates, function (i, value) {
+                    if (value === null && value.Job === null) {
+                        return;
+                    }
+                    var machineName = value.MachineName;
+                    var jobs = value.Job;
+
+                    $.each(jobs, function (j, jobObj) {
+                        // flag machine name
+                        jobObj.MachineName = machineName;
+
+                        // flag runtime
+                        var runtime = jobObj.Runtime;
+                        jobObj.Runtime = runtime.Value;
+                        jobObj.DereferencedRuntime = runtime.Dereferenced;
+
+                        // flag job stages
+                        $.each(jobObj.Stages, function (k, stage) {
+                            var stageHtml = "";
+                            $.each(stage, function(m, prop){
+                                prop = prop==null?"null":prop.replace(/\</g,'&lt;');  //escape html
+                                stageHtml += "<strong>"+m+": </strong>" + prop + "</br>"; // format 
+                            });
+
+                            jobObj['Stages_' + k] = stageHtml; // JSON.stringify(stage);
+                        });
+                        delete jobObj.Stages;
+
+                        jobObj.ProfileLog = '<a href="#">fetch</a>';  // TODO
+
+                        flagJobs.push(jobObj);
+                    });
+                });
+
+                return flagJobs;
+            }
+
+            $("#btn_Fetch").click(function () {
+                FetchJobStates();
+            });
+
+            var previouslySelected = null;
+            $('#table_jobState').on('click-row.bs.table', function (e, row, $element) {
+                var detailsTableData = [];
+                detailsTableData.push(row);
+                detailsTable.bootstrapTable('load', detailsTableData);
+
+                if (previouslySelected != null) {
+                    previouslySelected.removeClass('bgcolor');
+                }
+                $element.addClass('bgcolor');
+                previouslySelected = $element;
+            });
+
+            $(".dropdown-menu li a").click(function () {
+                var target = $(this).parentsUntil(".input-group").parent().find("input");
+                target.val($(this).text());
+                target.change();
+            });
+
+            function ajaxindicatorstart() {
+                $('body').css('cursor', 'wait');
+                $("input").prop('disabled', true);
+                $("button").prop('disabled', true);
+            }
+
+            function ajaxindicatorstop() {
+                $("input").prop('disabled', false);
+                $("button").prop('disabled', false);
+                $('body').css('cursor', 'auto');
+            }
+        });
+
+        function rowStyle(row, index){
+            if(row.Exception!=null && row.Exception!=""){
+                return {classes: 'danger'};
+            }
+            return {};
+        }
+    </script>
+}

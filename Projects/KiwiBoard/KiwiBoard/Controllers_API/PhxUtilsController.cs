@@ -5,9 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using System.Web.Script.Serialization;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
@@ -18,66 +20,72 @@ namespace KiwiBoard.Controllers_API
     {
         private static object syncObj = new object();
 
-        [Route("IscopeJobState")]
         [HttpGet]
-        public HttpResponseMessage IscopeJobState(string machineName, string runtime)
+        [Route("JobStates/{environment}/{runtime}/{machine}/{jobId}")]
+        public IEnumerable<Entities.JobStatesJobs> JobStates(string environment, string runtime, string machine, string jobId)
         {
-            return this.IscopeJobState(machineName, runtime, null);
+            return this.handleExceptions<IEnumerable<Entities.JobStatesJobs>>(() =>
+            {
+                if (machine.ToLower() == "all")
+                {
+                    machine = @".*";
+                }
+
+                var jobs = JobDiagnosticProcessor.Instance.FetchJobStatesFromEnvrionment(environment, runtime, machine).Jobs;
+                if (jobId.ToLower() == "all")
+                {
+                    return jobs;
+                }
+                else
+                {
+                    var result = new List<Entities.JobStatesJobs>();
+                    foreach (var job in jobs)
+                        foreach (var jobstate in job.Job)
+                        {
+                            if (jobstate.Guid.ToLower() == jobId.ToLower())
+                            {
+                                var expectedJobs = new Entities.JobStatesJobsJob[] { jobstate };
+                                result.Add(new Entities.JobStatesJobs { Job = expectedJobs, MachineName = job.MachineName });
+                            }
+                        }
+
+                    return result;
+                }
+            });
         }
 
-        [Route("IscopeJobState")]
         [HttpGet]
-        public HttpResponseMessage IscopeJobState(string machineName, string runtime, string jobId)
+        [Route("Test_JobStates/{environment}/{runtime}")]
+        public IEnumerable<Entities.JobStatesJobs> Test_JobStates(string environment, string runtime)
         {
-            try
-            {
-                var stateXmlString = JobDiagnosticProcessor.Instance.FetchIscopeJobState(machineName, runtime, jobId);
-
-                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(Utils.XmlSerialize(stateXmlString)) };
-            }
-            catch (ArgumentException)
-            {
-                return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Wrong query parameters! Machine name and runtime cannot be null." };
-            }
-            catch (JobNotFoundException ex)
-            {
-                return new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ex.Message };
-            }
-            catch (Exception ex)
-            {
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(ex.ToString()) };
-            }
-        }
-
-        [HttpGet]
-        public Entities.JobStates GetJobStates(string environment, string runtime)
-        {
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchAllIscopeJobState(environment, runtime));
+            JavaScriptSerializer jss = new JavaScriptSerializer();
+            var result = jss.Deserialize<Entities.JobStatesJobs[]>(File.ReadAllText(HttpContext.Current.Server.MapPath(@"~/app_data/jobstates.json")));
+            return result;
         }
 
         [HttpGet]
         public Entities.JobStatesJobsJob GetJobStates(string environment, string runtime, string jobId)
         {
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchIscopeJobState(environment, runtime, jobId));
+            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJobStateByIdFromEnvrionment(environment, runtime, jobId));
         }
 
         [HttpGet]
-        public string GetProfile(string environment, string runtime, string runtimeCodeName, string jobId)
+        public string GetProfile(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
         {
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJobProfile(Constants.ApCluster, environment, runtime, runtimeCodeName, jobId));
+            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJobProfile(apcluster, environment, runtime, runtimeCodeName, jobId));
         }
 
         [HttpGet]
-        public IEnumerable<Entities.CsLog> GetJmDispatcherLog(string environment, DateTime startTime, DateTime endTime)
+        public IEnumerable<Entities.CsLog> GetJmDispatcherLog(string apcluster, string environment, DateTime startTime, DateTime endTime)
         {
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(Constants.ApCluster, environment, startTime, endTime));
+            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(apcluster, environment, startTime, endTime));
         }
 
         [HttpGet]
-        public IEnumerable<Entities.CsLog> GetJmDispatcherLog(string environment, int last =0)
+        public IEnumerable<Entities.CsLog> GetJmDispatcherLog(string apcluster, string environment, int last = 0)
         {
             var now = DateTime.Now;
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(Constants.ApCluster, environment, now.AddMinutes(last * -1), now));
+            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(apcluster, environment, now.AddMinutes(last * -1), now));
         }
 
         [HttpGet]

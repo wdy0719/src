@@ -49,7 +49,7 @@ namespace KiwiBoard.Models.Tools
         {
             try
             {
-                var jobState = JobDiagnosticProcessor.Instance.FetchIscopeJobState(this.SelectedEnvironment, this.SelectedRuntime, this.SelectedJobId);
+                var jobState = JobDiagnosticProcessor.Instance.FetchJobStateByIdFromEnvrionment(this.SelectedEnvironment, this.SelectedRuntime, this.SelectedJobId);
 
                 this.JobState = jobState == null ? string.Empty : Utils.XmlSerialize(jobState);
             }
@@ -73,7 +73,7 @@ namespace KiwiBoard.Models.Tools
             {
                 lock (syncObj)
                 {
-                    EnvironmentMachineMap = Utils.GetEnvironmentMachineMap();
+                   // EnvironmentMachineMap = Utils.GetEnvironmentMachineMap();
                 }
             }
 

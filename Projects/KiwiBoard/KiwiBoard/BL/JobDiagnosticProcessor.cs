@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Caching;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -23,7 +24,7 @@ namespace KiwiBoard.BL
 
         public JobDiagnosticProcessor()
         {
-            this.EnvironmentMachineMap = Utils.GetEnvironmentMachineMap();
+            this.EnvironmentMachineMap = Settings.EnvironmentMachineMapping;
             this.jobStateCache = MemoryCache.Default;
         }
 
@@ -31,28 +32,30 @@ namespace KiwiBoard.BL
 
         public IDictionary<string, string[]> EnvironmentMachineMap { get; set; }
 
-        public Entities.JobStates FetchAllIscopeJobState(string environment, string runtime)
+        public Entities.JobStates FetchJobStatesFromEnvrionment(string environment, string runtime, string machineSearchPattern = "*")
         {
             if (string.IsNullOrEmpty(environment))
             {
                 throw new ArgumentNullException();
             }
 
-            var cacheName = string.Join("_", environment, runtime);
-
             var machines = this.EnvironmentMachineMap.First(e => e.Key.Equals(environment, StringComparison.InvariantCultureIgnoreCase)).Value;
+            machines = machines.Where(m => Regex.IsMatch(m, machineSearchPattern)).ToArray();
+
+            if (machines.Length == 0)
+            {
+                throw new ArgumentException("Machine not found in given envrionment.");
+            }
 
             var stateXml = PhxAutomation.Instance.FetchIscopeJobStateXml(machines, runtime);
             stateXml = string.Join(Environment.NewLine, stateXml.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Where(l => !l.StartsWith("<?xml")));
             stateXml = string.Format("<JobStates Environment=\"{0}\">", environment) + stateXml + "</JobStates>";
             var jobStates = Utils.XmlDeserialize<Entities.JobStates>(stateXml);
 
-            this.jobStateCache[cacheName] = jobStates;
-
             return jobStates;
         }
 
-        public Entities.JobStatesJobsJob FetchIscopeJobState(string environment, string runtime, string jobId)
+        public Entities.JobStatesJobsJob FetchJobStateByIdFromEnvrionment(string environment, string runtime, string jobId)
         {
             if (string.IsNullOrEmpty(environment) || string.IsNullOrEmpty(runtime) || string.IsNullOrEmpty(jobId))
             {
@@ -65,7 +68,7 @@ namespace KiwiBoard.BL
 
             if (result == null)
             {
-                this.FetchAllIscopeJobState(environment, runtime);
+                this.FetchJobStatesFromEnvrionment(environment, runtime);
 
                 result = this.FetchJobStateFromCache(cacheName, jobId);
             }
@@ -116,6 +119,10 @@ namespace KiwiBoard.BL
         private Entities.JobStatesJobsJob FetchJobStateFromCache(string cacheName, string jobId)
         {
             Entities.JobStatesJobsJob result = null;
+            if (string.IsNullOrEmpty(jobId))
+            {
+                return result;
+            }
 
             var cachedJobs = this.jobStateCache[cacheName] as Entities.JobStates;
             if (cachedJobs != null)
