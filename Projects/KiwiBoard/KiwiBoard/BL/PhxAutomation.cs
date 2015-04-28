@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -20,21 +21,21 @@ namespace KiwiBoard.BL
             Instance = new PhxAutomation();
         }
 
-        private PowerShell psInstance = null;
+        private RunspacePool rsPool = null;
+
+        private InitialSessionState defaultSessionState = null;
 
         public PhxAutomation()
         {
-            psInstance = System.Management.Automation.PowerShell.Create(RunspaceMode.NewRunspace);
+            this.defaultSessionState = System.Management.Automation.Runspaces.InitialSessionState.CreateDefault();
+            defaultSessionState.ApartmentState = System.Threading.ApartmentState.MTA;
+            defaultSessionState.ThreadOptions = System.Management.Automation.Runspaces.PSThreadOptions.UseNewThread;
+            defaultSessionState.ThrowOnRunspaceOpenError = true;
+            defaultSessionState.ImportPSModule(new string[] { Settings.CoreXTAutomationModule, Settings.PhxAutomationModule });
 
-            psInstance.AddScript("Set-ExecutionPolicy -ExecutionPolicy Bypass -Force");
-            psInstance.AddScript(string.Format(@"Import-Module '{0}'", Settings.CoreXTAutomationModule));
-            psInstance.AddScript(string.Format(@"Import-Module '{0}'", Settings.PhxAutomationModule));
-            psInstance.AddScript(@"Set-ApGoldRoot -Path " + Settings.ApGoldSrcRoot);
-            psInstance.Invoke();
-            if (psInstance.Streams.Error.Count > 0)
-            {
-                throw new PhxAutomationException(PhxAutomationErrorCode.InitError, "Initiliaze Phx Automation Powershell Failed. {0}", psInstance.Streams.Error.ToString());
-            }
+            this.rsPool = System.Management.Automation.Runspaces.RunspaceFactory.CreateRunspacePool(defaultSessionState);
+            this.rsPool.SetMaxRunspaces(20);
+            this.rsPool.Open();
         }
 
         public string FetchIscopeJobStateXml(string machineName, string runtime)
@@ -73,7 +74,7 @@ namespace KiwiBoard.BL
 
             try
             {
-                return this.RunScript<Entities.CsLog>(script);
+                return this.RunScriptAsync<Entities.CsLog>(script);
             }
             catch (RuntimeException ex)
             {
@@ -119,15 +120,15 @@ namespace KiwiBoard.BL
             }
         }
 
-        private string RunScript(string script)
+        public string RunScript(string script)
         {
-            lock (this)
+            StringBuilder result = new StringBuilder();
+            using (var ps = System.Management.Automation.PowerShell.Create())
             {
-                StringBuilder result = new StringBuilder();
-                psInstance.AddScript("$error.clear();");
-                psInstance.AddScript(script);
-                var output = psInstance.Invoke();
-
+                ps.RunspacePool = this.rsPool;
+                ps.AddScript(@"Set-Enlistment apgold " + Settings.ApGoldSrcRoot);
+                ps.AddScript(script);
+                var output = ps.Invoke();
                 foreach (PSObject outputItem in output)
                 {
                     if (outputItem != null)
@@ -135,20 +136,20 @@ namespace KiwiBoard.BL
                         result.AppendLine(outputItem.ToString());
                     }
                 }
-
-                return result.ToString();
             }
+            return result.ToString();
         }
 
-        private IEnumerable<T> RunScript<T>(string script)
+        private IEnumerable<T> RunScriptAsync<T>(string script)
         {
-            lock (this)
+            using (var ps = System.Management.Automation.PowerShell.Create(this.defaultSessionState))
             {
                 var result = new List<T>();
 
-                psInstance.AddScript("$error.clear();");
-                psInstance.AddScript(script);
-                var output = psInstance.Invoke();
+                ps.RunspacePool = this.rsPool;
+                ps.AddScript(@"Set-ApGoldRoot -Path " + Settings.ApGoldSrcRoot);
+                ps.AddScript(script);
+                var output = ps.Invoke();
 
                 foreach (PSObject outputItem in output)
                 {
@@ -172,9 +173,9 @@ namespace KiwiBoard.BL
 
         public void Dispose()
         {
-            if (psInstance != null)
+            if (this.rsPool != null)
             {
-                psInstance.Dispose();
+                this.rsPool.Dispose();
             }
         }
     }

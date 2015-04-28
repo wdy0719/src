@@ -1,0 +1,74 @@
+﻿
+@{
+    
+    //[Route("JobProfile/{apCluster}/{environment}/{runtime}/{dereferencedRuntime}/{jobId}")]
+    ViewBag.jobId = ViewContext.RouteData.Values["jobId"];
+    ViewBag.dereferencedRuntime = ViewContext.RouteData.Values["dereferencedRuntime"];
+    ViewBag.environment = ViewContext.RouteData.Values["environment"];
+    ViewBag.apCluster = ViewContext.RouteData.Values["apCluster"];
+    ViewBag.runtime = ViewContext.RouteData.Values["runtime"];
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    ViewBag.Title = "Job Profile - " + ViewBag.jobId;
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Job Profile<small><i>&nbsp;&nbsp; - Job Id: @ViewBag.JobId</i></small></></h3>
+    </div>
+    <div class="panel-body">
+
+        <div class="row" style="padding:5px 15px 5px 15px;">
+            <pre id="profileLog" class="wordwrap" style="min-height:300px;">Loading...</pre>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wordwrap {
+        white-space: pre-wrap; /* css-3 */
+        white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+        white-space: -pre-wrap; /* Opera 4-6 */
+        white-space: -o-pre-wrap; /* Opera 7 */
+        word-wrap: break-word; /* Internet Explorer 5.5+ */
+    }
+
+</style>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            loadProfile();
+        });
+
+        function loadProfile() {
+            var url = "/api/phxutils/GetProfile/@ViewBag.apCluster/@ViewBag.environment/@ViewBag.runtime/@ViewBag.dereferencedRuntime/@ViewBag.jobId";
+
+            ajaxindicatorstart();
+            $.get(url, function () { })
+                .done(function (data) {
+                    var log = data == null || data == '' ? 'Not Found.' : data.replace(/\</g, '&lt;');
+                    $('#profileLog').text(log);
+                })
+                .error(function (err) {
+                    $('#profileLog').html("Error: " + err.toString());
+                })
+                .always(function () {
+                    ajaxindicatorstop();
+                });
+        }
+
+        function ajaxindicatorstart() {
+            $('body').css('cursor', 'wait');
+            $("input").prop('disabled', true);
+            $("button").prop('disabled', true);
+        }
+
+        function ajaxindicatorstop() {
+            $("input").prop('disabled', false);
+            $("button").prop('disabled', false);
+            $('body').css('cursor', 'auto');
+        }
+    </script>
+}

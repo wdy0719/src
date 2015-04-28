@@ -18,13 +18,11 @@ namespace KiwiBoard.Controllers_API
     [RoutePrefix("api/PhxUtils")]
     public class PhxUtilsController : ApiController
     {
-        private static object syncObj = new object();
-
         [HttpGet]
         [Route("JobStates/{environment}/{runtime}/{machine}/{jobId}")]
-        public IEnumerable<Entities.JobStatesJobs> JobStates(string environment, string runtime, string machine, string jobId)
+        public async Task<IEnumerable<Entities.JobStatesJobs>> JobStates(string environment, string runtime, string machine, string jobId)
         {
-            return this.handleExceptions<IEnumerable<Entities.JobStatesJobs>>(() =>
+            return await this.handleExceptions<IEnumerable<Entities.JobStatesJobs>>(() =>
             {
                 if (machine.ToLower() == "all")
                 {
@@ -46,6 +44,7 @@ namespace KiwiBoard.Controllers_API
                             {
                                 var expectedJobs = new Entities.JobStatesJobsJob[] { jobstate };
                                 result.Add(new Entities.JobStatesJobs { Job = expectedJobs, MachineName = job.MachineName });
+                                return result;
                             }
                         }
 
@@ -64,54 +63,54 @@ namespace KiwiBoard.Controllers_API
         }
 
         [HttpGet]
-        public Entities.JobStatesJobsJob GetJobStates(string environment, string runtime, string jobId)
+        [Route("GetProfile/{apcluster}/{environment}/{runtime}/{runtimeCodeName}/{jobId:guid}")]
+        public async Task<string> GetProfile(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
         {
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJobStateByIdFromEnvrionment(environment, runtime, jobId));
+            return await this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJobProfile(apcluster, environment, runtime, runtimeCodeName, jobId));
         }
 
         [HttpGet]
-        public string GetProfile(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
+        [Route("GetJmDispatcherLog/{apcluster}/{environment}/{startTime}/{endTime}")]
+        public async Task<IEnumerable<Entities.CsLog>> GetJmDispatcherLog(string apcluster, string environment, DateTime startTime, DateTime endTime)
         {
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJobProfile(apcluster, environment, runtime, runtimeCodeName, jobId));
+            return await this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(apcluster, environment, startTime, endTime));
         }
 
         [HttpGet]
-        public IEnumerable<Entities.CsLog> GetJmDispatcherLog(string apcluster, string environment, DateTime startTime, DateTime endTime)
-        {
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(apcluster, environment, startTime, endTime));
-        }
-
-        [HttpGet]
-        public IEnumerable<Entities.CsLog> GetJmDispatcherLog(string apcluster, string environment, int last = 0)
+        public async Task<IEnumerable<Entities.CsLog>> GetJmDispatcherLog(string apcluster, string environment, int last = 0)
         {
             var now = DateTime.Now;
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(apcluster, environment, now.AddMinutes(last * -1), now));
+            return await this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(apcluster, environment, now.AddMinutes(last * -1), now));
         }
 
         [HttpGet]
-        public IEnumerable<Entities.CsLog> GetCsLog(string apCluster, string cosmosCluster, DateTime startTime, DateTime endTime, string searchPattern)
+        [Route("GetCsLog/{apcluster}/{cosmosCluster}")]
+        public async Task<IEnumerable<Entities.CsLog>> GetCsLog(string apCluster, string cosmosCluster, string startTime, string endTime, string searchPattern)
         {
-            return this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchCsLogs(apCluster, cosmosCluster, startTime, endTime, searchPattern));
+            return await this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchCsLogs(apCluster, cosmosCluster, DateTime.Parse(startTime.Trim('\'')), DateTime.Parse(endTime.Trim('\'')), searchPattern.Trim('\'')));
         }
 
-        private T handleExceptions<T>(Func<T> action)
+        private async Task<T> handleExceptions<T>(Func<T> action)
         {
-            try
+            return await Task.Run(() =>
             {
-                return action();
-            }
-            catch (ArgumentException)
-            {
-                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Wrong query parameters! Runtime name and job Id cannot be null." });
-            }
-            catch (JobNotFoundException ex)
-            {
-                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(ex.ToString()) });
-            }
+                try
+                {
+                    return action();
+                }
+                catch (ArgumentException)
+                {
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Wrong query parameters! Runtime name and job Id cannot be null." });
+                }
+                catch (JobNotFoundException ex)
+                {
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ex.Message });
+                }
+                catch (Exception ex)
+                {
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(ex.ToString()) });
+                }
+            });
         }
     }
 }

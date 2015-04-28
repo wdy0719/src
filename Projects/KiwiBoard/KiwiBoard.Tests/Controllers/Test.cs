@@ -10,6 +10,9 @@ using KiwiBoard.BL;
 using System.Xml.Linq;
 using KiwiBoard.Controllers_API;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Xml;
+using System.IO;
 
 namespace KiwiBoard.Tests.Controllers
 {
@@ -19,8 +22,6 @@ namespace KiwiBoard.Tests.Controllers
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            PhxAutomation.Instance = new PhxAutomation();
-            JobDiagnosticProcessor.Instance = new JobDiagnosticProcessor();
         }
 
         [TestMethod]
@@ -34,13 +35,9 @@ namespace KiwiBoard.Tests.Controllers
         [TestMethod]
         public void FetchIscopeJobStateXml()
         {
-            var test = PhxAutomation.Instance.FetchIscopeJobStateXml(new string[] { "BN4SCH103190147", "BN4SCH103190148" }, "IScope_Beta");
+           var test = PhxAutomation.Instance.FetchIscopeJobStateXml(new string[] { "BN4SCH103190147", "BN4SCH103190148" }, "IScope_default");
 
-            var result = string.Join(Environment.NewLine, test.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Where(l => !l.StartsWith("<?xml")));
-
-            result = "<JobStates Environment=\"XXX\">" + result + "</JobStates>";
-          
-            // Assert
+           test =Regex.Replace(test, @"<\?xml.*\?>", Environment.NewLine);
             Assert.IsNotNull(test);
         }
 
@@ -68,6 +65,21 @@ namespace KiwiBoard.Tests.Controllers
             var test = JobDiagnosticProcessor.Instance.FetchJmDispatcherLog("bn2", "kobo04-test-bn2", DateTime.Parse("04/13/2015 15:40:00"), DateTime.Parse("04/13/2015 15:45:00"));
 
             Assert.IsNotNull(test);
+        }
+
+
+        [TestMethod]
+        public void ExeScriptInMultiThread()
+        {
+            var tasks = new List<Task<string>>();
+            for (int i = 10; i > 0; i--)
+            {
+                tasks.Add(Task.Run<string>(() => PhxAutomation.Instance.FetchIscopeJobStateXml(new string[] { "BN4SCH103190147", "BN4SCH103190148" }, "IScope_default")));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+
+            Assert.IsTrue(tasks.All(t => t.Result != null));
         }
     }
 }

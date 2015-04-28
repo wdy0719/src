@@ -1,0 +1,53 @@
+﻿@{
+
+    //[Route("JobProfile/{apCluster}/{environment}/{runtime}/{dereferencedRuntime}/{jobId}")]
+    ViewBag.apcluster = ViewContext.RouteData.Values["apcluster"];
+    ViewBag.environment = ViewContext.RouteData.Values["environment"];
+    ViewBag.startTime = Request.Params["startTime"];
+    ViewBag.endTime = Request.Params["endTime"];
+    ViewBag.searchPattern = Request.Params["searchPattern"]; //"cosmosErrorLog_JobManagerDispatcher.exe*"; // JM Dispatch search pattern
+    ViewBag.QueryUrl = Url.Content(string.Format("~/api/PhxUtils/GetCsLog/{0}/{1}?startTime='{2}'&endTime='{3}'&searchPattern='{4}'", ViewBag.apcluster, ViewBag.environment, ViewBag.startTime, ViewBag.endTime, ViewBag.searchPattern));
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    ViewBag.Title = "CsLog";
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">CsLog<small><i>&nbsp;&nbsp; - Environment: @ViewBag.environment</i></small></></h3>
+    </div>
+    <div class="panel-body">
+
+        <div class="row" style="padding:5px 15px 5px 15px;">
+            <table id="csLogsTable"
+                   class="bootstrap-table"
+                   data-url="@ViewBag.QueryUrl"
+                   data-toggle="table"
+                   >
+                <thead>
+                    <tr>
+                        @foreach (var prop in typeof(KiwiBoard.Entities.CsLog).GetProperties())
+                        {
+                            <th data-field="@prop.Name" data-sortable="true">@prop.Name</th>
+                        }
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wordwrap {
+        white-space: pre-wrap; /* css-3 */
+        white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+        white-space: -pre-wrap; /* Opera 4-6 */
+        white-space: -o-pre-wrap; /* Opera 7 */
+        word-wrap: break-word; /* Internet Explorer 5.5+ */
+    }
+</style>
+
+@section Scripts
+{
+
+}

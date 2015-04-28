@@ -17,7 +17,7 @@
                         <ul class="dropdown-menu" role="menu" id="environmentMenu">
                             @foreach (var environment in @KiwiBoard.BL.Settings.Environments)
                             {
-                                <li><a href="~/Tools/JobStateView/@environment"><small>@environment</small></a></li>
+                                <li><a href="~/Tools/JobState/@environment"><small>@environment</small></a></li>
                             }
                         </ul>
                     </div>
@@ -94,7 +94,8 @@
                         <th data-field="MachineName">Machine</th>
                         <th data-field="TargetCosmosCluster">Cosmos Cluster</th>
                         <th data-field="legacyVC">Legacy VC</th>
-                        <th data-field="ProfileLog">Profile</th>
+                        <th data-field="ProfileLog">Profile Log</th>
+                        <th data-field="JMDispatcherLog">JM Dispatcher Log</th>
                     </tr>
                 </thead>
             </table>
@@ -104,6 +105,7 @@
     </div>
 
 </div>
+
 <div class="panel panel-default">
     <div class="panel-heading">
         <h3 class="panel-title">Job State Details</h3>
@@ -219,7 +221,7 @@
                         jobStateTable.bootstrapTable('load', jobs);
                     })
                     .error(function(err){
-                        jobStateTable.bootstrapTable('load', {});
+                        jobStateTable.bootstrapTable('load', []);
                     })
                     .always(function () {
                         jobStateTable.bootstrapTable('hideLoading');
@@ -251,18 +253,28 @@
                         jobObj.DereferencedRuntime = runtime.Dereferenced;
 
                         // flag job stages
-                        $.each(jobObj.Stages, function (k, stage) {
-                            var stageHtml = "";
-                            $.each(stage, function(m, prop){
-                                prop = prop==null?"null":prop.replace(/\</g,'&lt;');  //escape html
-                                stageHtml += "<strong>"+m+": </strong>" + prop + "</br>"; // format 
+                        if (jobObj.Stages != null) {
+                            jobObj.StartTime = jobObj.Stages[0].StartTime;
+                            jobObj.EndTime = jobObj.Stages[jobObj.Stages.length - 1].EndTime;
+                            $.each(jobObj.Stages, function (k, stage) {
+                                var stageHtml = "";
+                                $.each(stage, function (m, prop) {
+                                    prop = prop == null ? "null" : prop.replace(/\</g, '&lt;');  //escape html
+                                    stageHtml += "<strong>" + m + ": </strong>" + prop + "</br>"; // format 
+                                });
+
+                                jobObj['Stages_' + k] = stageHtml; // JSON.stringify(stage);
                             });
+                            delete jobObj.Stages;
+                        }
 
-                            jobObj['Stages_' + k] = stageHtml; // JSON.stringify(stage);
-                        });
-                        delete jobObj.Stages;
+                        // create profile link
+                        var link = location.protocol + '//' + location.host + '/' + 'tools/jobprofile/' + jobObj.TargetAPCluster + '/' + jobObj.TargetCosmosCluster + '/' + jobObj.Runtime + '/' + jobObj.DereferencedRuntime + '/' + jobObj.Guid;
+                        jobObj.ProfileLog = '<a href="' + link + '" target="_blank">profile</a>';
 
-                        jobObj.ProfileLog = '<a href="#">fetch</a>';  // TODO
+                        // create CsLog link
+                        var jmDispatcherLog = location.protocol + '//' + location.host + '/' + 'tools/CsLog/' + jobObj.TargetAPCluster + '/' + jobObj.TargetCosmosCluster + "?startTime='" + jobObj.StartTime + "'&endtime='" + jobObj.EndTime + "'&searchPattern=" + "*JobManagerDispatcher*";
+                        jobObj.JMDispatcherLog = '<a href="' + jmDispatcherLog + '" target="_blank">JMDispatcher Log</a>';
 
                         flagJobs.push(jobObj);
                     });
@@ -289,22 +301,15 @@
             });
 
             $(".dropdown-menu li a").click(function () {
-                var target = $(this).parentsUntil(".input-group").parent().find("input");
-                target.val($(this).text());
-                target.change();
+                var targetParent = $(this).parentsUntil(".input-group").last().parent(".input-group");
+                if (targetParent != null && targetParent.length==1) {
+                    var target = targetParent.find("input[data-toggle='dropdown']");
+                    if (target != null) {
+                        target.val($(this).text());
+                        target.change();
+                    }
+                }
             });
-
-            function ajaxindicatorstart() {
-                $('body').css('cursor', 'wait');
-                $("input").prop('disabled', true);
-                $("button").prop('disabled', true);
-            }
-
-            function ajaxindicatorstop() {
-                $("input").prop('disabled', false);
-                $("button").prop('disabled', false);
-                $('body').css('cursor', 'auto');
-            }
         });
 
         function rowStyle(row, index){

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -48,14 +49,14 @@ namespace KiwiBoard.BL
             }
 
             var stateXml = PhxAutomation.Instance.FetchIscopeJobStateXml(machines, runtime);
-            stateXml = string.Join(Environment.NewLine, stateXml.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Where(l => !l.StartsWith("<?xml")));
+            stateXml = Regex.Replace(stateXml, @"<\?xml.*\?>", Environment.NewLine);
             stateXml = string.Format("<JobStates Environment=\"{0}\">", environment) + stateXml + "</JobStates>";
             var jobStates = Utils.XmlDeserialize<Entities.JobStates>(stateXml);
 
             return jobStates;
         }
 
-        public Entities.JobStatesJobsJob FetchJobStateByIdFromEnvrionment(string environment, string runtime, string jobId)
+        public  Entities.JobStatesJobsJob FetchJobStateByIdFromEnvrionment(string environment, string runtime, string jobId)
         {
             if (string.IsNullOrEmpty(environment) || string.IsNullOrEmpty(runtime) || string.IsNullOrEmpty(jobId))
             {

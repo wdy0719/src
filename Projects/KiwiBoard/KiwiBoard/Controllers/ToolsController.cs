@@ -11,34 +11,10 @@ namespace KiwiBoard.Controllers
     [RoutePrefix("tools")]
     public class ToolsController : Controller
     {
-        public ActionResult Index(string env = null)
-        {
-            try
-            {
-                return View(new IScopeJobDiagnosticModel(env));
-            }
-            catch
-            {
-                return HttpNotFound();
-            }
-        }
-
-        public ActionResult CsLogs(string env, DateTime? startTime, DateTime? endTime, string searchPattern)
-        {
-            try
-            {
-                return View();
-            }
-            catch
-            {
-                return HttpNotFound();
-            }
-        }
-
         [HttpGet]
         [Route("")]
-        [Route("JobStateView")]
-        [Route("JobStateView/{environment}")]
+        [Route("JobState")]
+        [Route("JobState/{environment}")]
         public ActionResult JobStateView(string environment)
         {
             var model = new JobStateViewModel
@@ -52,6 +28,20 @@ namespace KiwiBoard.Controllers
           
 
             return View(model);
+        }
+
+        [HttpGet]
+        [Route("JobProfile/{apCluster}/{environment}/{runtime}/{dereferencedRuntime}/{jobId}")]
+        public ActionResult JobProfileView(string apCluster, string environment, string runtime, string dereferencedRuntime, string jobId)
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [Route("CsLog/{apCluster}/{environment}")]
+        public ActionResult CsLogView(string apCluster, string environment, string startTime, string endTime, string searchPattern)
+        {
+            return View();
         }
     }
 }

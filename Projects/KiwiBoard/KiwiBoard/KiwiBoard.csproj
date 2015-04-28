@@ -190,7 +190,6 @@
       <DependentUpon>KiwiBoard.edmx</DependentUpon>
     </Compile>
     <Compile Include="Models\Tools\CsLogViewModel.cs" />
-    <Compile Include="Models\Tools\IScopeJobDiagnosticModel.cs" />
     <Compile Include="Models\Tools\JobStateViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestResult.cs">
@@ -365,11 +364,9 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
     <Content Include="Scripts\ZeroClipboard.Core.min.map" />
     <Content Include="Scripts\ZeroClipboard.min.map" />
-    <Content Include="Views\Tools\index.cshtml" />
-    <Content Include="Views\Tools\CsLogs.cshtml" />
-    <None Include="Views\Tools\JobDiagnostic.cshtml_bak" />
-    <None Include="Views\Tools\index.cshtml_v1" />
+    <Content Include="Views\Tools\CsLogView.cshtml" />
     <Content Include="Views\Tools\JobStateView.cshtml" />
+    <Content Include="Views\Tools\JobProfileView.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\" />

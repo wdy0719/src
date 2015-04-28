@@ -14,7 +14,7 @@ namespace KiwiBoard.BL
         public static string[] Runtimes = WebConfigurationManager.AppSettings["ISCOPEJOBDIAGNOSTIC_RUNTIME"].Split(',').Select(e => e.Trim()).ToArray();
         public static IDictionary<string, string[]> EnvironmentMachineMapping = Utils.GetEnvironmentMachineMap(WebConfigurationManager.AppSettings["ISCOPEJOBDIAGNOSTIC_ENVRIONMENT"]);
 
-        public static string CoreXTAutomationModule = @"D:\tools\CoreXtAutomationGit\CoreXTAutomation.psd1";
-        public static string PhxAutomationModule = @"D:\tools\PhxAutomation\PHXAutomation.psd1";
+        public static string CoreXTAutomationModule = @"D:\tools\CoreXtAutomationGit\CoreXTAutomation.psm1";
+        public static string PhxAutomationModule = @"D:\tools\PhxAutomation\PHXAutomation.psm1";
     }
 }
