@@ -53,3 +53,4 @@
 /// <reference path="../content/bootstrap-table/locale/bootstrap-table-vi-VN.js" />
 /// <reference path="../content/bootstrap-table/locale/bootstrap-table-zh-CN.js" />
 /// <reference path="../content/bootstrap-table/locale/bootstrap-table-zh-TW.js" />
+/// <reference path="../content/highlight/highlight.pack.js" />

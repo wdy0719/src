@@ -38,13 +38,16 @@ namespace KiwiBoard.Controllers_API
                 {
                     var result = new List<Entities.JobStatesJobs>();
                     foreach (var job in jobs)
-                        foreach (var jobstate in job.Job)
+                        if (job.Job != null)
                         {
-                            if (jobstate.Guid.ToLower() == jobId.ToLower())
+                            foreach (var jobstate in job.Job)
                             {
-                                var expectedJobs = new Entities.JobStatesJobsJob[] { jobstate };
-                                result.Add(new Entities.JobStatesJobs { Job = expectedJobs, MachineName = job.MachineName });
-                                return result;
+                                if (jobstate.Guid.ToLower() == jobId.ToLower())
+                                {
+                                    var expectedJobs = new Entities.JobStatesJobsJob[] { jobstate };
+                                    result.Add(new Entities.JobStatesJobs { Job = expectedJobs, MachineName = job.MachineName });
+                                    return result;
+                                }
                             }
                         }
 
@@ -64,9 +67,42 @@ namespace KiwiBoard.Controllers_API
 
         [HttpGet]
         [Route("GetProfile/{apcluster}/{environment}/{runtime}/{runtimeCodeName}/{jobId:guid}")]
-        public async Task<string> GetProfile(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
+        public async Task<dynamic> GetProfile(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
         {
-            return await this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJobProfile(apcluster, environment, runtime, runtimeCodeName, jobId));
+            return await this.handleExceptions(() => {
+                
+                var onMachine=string.Empty;
+                var profile =JobDiagnosticProcessor.Instance.FetchJobProfile(apcluster, environment, runtime, runtimeCodeName, jobId, out onMachine);
+
+                return new { Machine = onMachine, Profile = profile };
+            });
+        }
+
+        [HttpGet]
+        [Route("GetProfileTest/{apcluster}/{environment}/{runtime}/{runtimeCodeName}/{jobId:guid}")]
+        public async Task<dynamic> GetProfileTest(bool obj = false)
+        {
+            return await this.handleExceptions(() =>
+            {
+
+                var onMachine = "Test";
+                var profile = File.ReadAllText(@"C:\Users\v-dayow\Desktop\profile.tmp");
+
+                return new { Machine = onMachine, Profile = profile };
+            });
+        }
+
+        [HttpGet]
+        [Route("GetProfileObj/{apcluster}/{environment}/{runtime}/{runtimeCodeName}/{jobId:guid}")]
+        public async Task<dynamic> GetProfileObj(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
+        {
+            return await this.handleExceptions(() =>
+            {
+
+                var onMachine = string.Empty;
+                var profile = JobDiagnosticProcessor.Instance.FetchJobProfile(apcluster, environment, runtime, runtimeCodeName, jobId, out onMachine);
+                return JobDiagnosticProcessor.Instance.ParseAnalyzerJobFromProfile(profile);
+            });
         }
 
         [HttpGet]

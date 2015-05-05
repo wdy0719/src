@@ -90,10 +90,10 @@
                         <th data-field="JobSubType">Job SubType</th>
                         <th data-field="DereferencedRuntime">Dereferenced Runtime</th>
                         <th data-field="UserName">User Name</th>
-                        <th data-field="ClientMachine">Client Machine</th>
+                        @*<th data-field="ClientMachine">Client Machine</th>*@
                         <th data-field="MachineName">Machine</th>
                         <th data-field="TargetCosmosCluster">Cosmos Cluster</th>
-                        <th data-field="legacyVC">Legacy VC</th>
+                        @*<th data-field="legacyVC">Legacy VC</th>*@
                         <th data-field="ProfileLog">Profile Log</th>
                         <th data-field="JMDispatcherLog">JM Dispatcher Log</th>
                     </tr>
@@ -119,9 +119,10 @@
                 <thead>
                     <tr>
                         <th data-field="Guid">Job Id:</th>
-                        <th data-field="Script">Script:</th>
                         <th data-field="Scopeexe">Execution (SCOPE.EXE)</th>
+                        <th data-field="WorkingDir">WorkingDir</th>
                         <th data-field="Exception">Exception:</th>
+                        <th data-field="Script">Script:</th>
                         <th data-field="Stages_0">Stages_0:</th>
                         <th data-field="Stages_1">Stages_1:</th>
                         <th data-field="Stages_2">Stages_2:</th>
@@ -237,7 +238,7 @@
                 }
 
                 $.each(jobStates, function (i, value) {
-                    if (value === null && value.Job === null) {
+                    if (value === null || value.Job === null) {
                         return;
                     }
                     var machineName = value.MachineName;

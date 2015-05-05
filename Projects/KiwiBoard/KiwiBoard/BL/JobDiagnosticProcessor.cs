@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Caching;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -27,6 +29,7 @@ namespace KiwiBoard.BL
         {
             this.EnvironmentMachineMap = Settings.EnvironmentMachineMapping;
             this.jobStateCache = MemoryCache.Default;
+
         }
 
         private ObjectCache jobStateCache;
@@ -84,20 +87,56 @@ namespace KiwiBoard.BL
                 throw new ArgumentNullException();
             }
 
-            return this.FetchJobProfile(jobState.TargetAPCluster, jobState.TargetCosmosCluster, jobState.Runtime.Value, jobState.Runtime.Dereferenced, jobState.Guid);
+            string machine = string.Empty;
+
+            return this.FetchJobProfile(jobState.TargetAPCluster, jobState.TargetCosmosCluster, jobState.Runtime.Value, jobState.Runtime.Dereferenced, jobState.Guid, out machine);
         }
 
-        public string FetchJobProfile(string apCluster, string cosmosCluster, string runtime, string runtimeCodeName, string jobId)
+        public string FetchJobProfile(string apCluster, string cosmosCluster, string runtime, string runtimeCodeName, string jobId, out string machineName)
         {
             if (string.IsNullOrEmpty(apCluster) || string.IsNullOrEmpty(cosmosCluster) || string.IsNullOrEmpty(runtime) || string.IsNullOrEmpty(runtimeCodeName) || string.IsNullOrEmpty(jobId))
             {
                 throw new ArgumentNullException();
             }
 
+            machineName = string.Empty;
             var jmMachines = Utils.GetFunctionMachines(apCluster, cosmosCluster, "JM");
-            var profileTxt = PhxAutomation.Instance.FetchProfileLog(cosmosCluster, runtime, runtimeCodeName, jobId, jmMachines);
 
-            return profileTxt;
+            foreach (var machine in jmMachines)
+            {
+                var profileTxt = PhxAutomation.Instance.TryFetchProfileLog(cosmosCluster, runtime, runtimeCodeName, jobId, machine);
+                if (!string.IsNullOrEmpty(profileTxt))
+                {
+                    machineName = machine;
+                    return profileTxt;
+                }
+            }
+
+            return string.Empty;
+        }
+
+        public JobAnalyzer.Job ParseAnalyzerJobFromProfile(string profile)
+        {
+            using (var profileStream = new MemoryStream(Encoding.UTF8.GetBytes(profile)))
+            {
+                return JobAnalyzer.ProfileStreamParser.ParseProfileStreamFromStream(profileStream);
+            }
+        }
+
+        public string GetJobAnalyzerResult(string profileFile)
+        {
+            if (string.IsNullOrEmpty(profileFile) || !File.Exists(profileFile))
+            {
+                throw new ArgumentException();
+            }
+
+            string workDir = HttpContext.Current.Server.MapPath(@"~/App_Data/jobAnalyzer");
+
+            string script = "$a = import-module " + Settings.JobAnalyzerModule + ";";
+            script += Environment.NewLine + "pushd " + workDir + ";";
+            script += Environment.NewLine + "$b = Generate-IScopeJobSummary2 -profileFile \"" + profileFile + "\";";
+            script += Environment.NewLine + "Get-Content .\\report_iscope.html";
+            return PhxAutomation.Instance.RunScript(script);
         }
 
         public IEnumerable<Entities.CsLog> FetchCsLogs(string apCluster, string cosmosCluster, DateTime startTime, DateTime endTime, string searchPattern = "*")

@@ -16,5 +16,6 @@ namespace KiwiBoard.BL
 
         public static string CoreXTAutomationModule = @"D:\tools\CoreXtAutomationGit\CoreXTAutomation.psm1";
         public static string PhxAutomationModule = @"D:\tools\PhxAutomation\PHXAutomation.psm1";
+        public static string JobAnalyzerModule = @"D:\tools\JobAnalyzer\JobAnalyzer.psd1";
     }
 }

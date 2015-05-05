@@ -50,11 +50,12 @@ namespace KiwiBoard.BL
             return this.RunScriptOnMachines(machinesName, commands);
         }
 
-        public string FetchProfileLog(string environment, string runtime, string runtimeCodeName, string jobId, params string[] machines)
+        // returns empty if profile not found in specified machine.
+        public string TryFetchProfileLog(string environment, string runtime, string runtimeCodeName, string jobId, string machine)
         {
             var commands = string.Format("Read-PhxFile \"data\\JobManagerService\\{0}\\{1}\\{2}\\profile_{{{3}}}.txt\"", environment, runtime, runtimeCodeName, jobId);
 
-            return this.RunScriptOnMachines(machines, commands);
+            return this.RunScriptOnMachines(new string[] { machine }, commands);
         }
 
         public string FetchCsLog(DateTime startTime, DateTime endTime, string searchPattern, params string[] machines)
@@ -126,7 +127,7 @@ namespace KiwiBoard.BL
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
                 ps.RunspacePool = this.rsPool;
-                ps.AddScript(@"Set-Enlistment apgold " + Settings.ApGoldSrcRoot);
+                // ps.AddScript(@"Set-Enlistment apgold " + Settings.ApGoldSrcRoot);
                 ps.AddScript(script);
                 var output = ps.Invoke();
                 foreach (PSObject outputItem in output)
@@ -138,6 +139,17 @@ namespace KiwiBoard.BL
                 }
             }
             return result.ToString();
+        }
+
+        public IEnumerable<dynamic> RunScriptWithDynamicOutput(string script)
+        {
+            using (var ps = System.Management.Automation.PowerShell.Create())
+            {
+                ps.RunspacePool = this.rsPool;
+                // ps.AddScript(@"Set-Enlistment apgold " + Settings.ApGoldSrcRoot);
+                ps.AddScript(script);
+                return ps.Invoke();
+            }
         }
 
         private IEnumerable<T> RunScriptAsync<T>(string script)

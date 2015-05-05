@@ -33,6 +33,12 @@ namespace KiwiBoard.Tests.Controllers
 
 
         [TestMethod]
+        public void RunScriptWithDynamicOutput()
+        {
+            var test = PhxAutomation.Instance.RunScript(@"'BN4SCH103200743' | Read-PhxFile 'data\JobManagerService\kobo04-test-bn2\iscope_Default\nazhan_runtime_0429\profile_{80d1b50f-f5c2-4a00-b442-91f19c41a294}.txt'");
+        }
+
+        [TestMethod]
         public void FetchIscopeJobStateXml()
         {
            var test = PhxAutomation.Instance.FetchIscopeJobStateXml(new string[] { "BN4SCH103190147", "BN4SCH103190148" }, "IScope_default");
@@ -44,7 +50,7 @@ namespace KiwiBoard.Tests.Controllers
         [TestMethod]
         public void FetchProfileLog()
         {
-            var test = PhxAutomation.Instance.FetchProfileLog("kobo04-test-bn2", "iscope_beta", "nazhan_runtime_0319", "076EC92E-A8F5-4E73-ACC1-180102B0747F-", "BN4SCH103200743", "BN4SCH103200843");
+            var test = PhxAutomation.Instance.TryFetchProfileLog("kobo04-test-bn2", "iscope_default", "nazhan_runtime_0427", "866ff0de-9161-4bf3-bf57-aa65bf549dc0", "BN4SCH103200743");
 
             // Assert
             Assert.IsNotNull(test);
@@ -53,13 +59,14 @@ namespace KiwiBoard.Tests.Controllers
         [TestMethod]
         public void GetProfile()
         {
-            var test = JobDiagnosticProcessor.Instance.FetchJobProfile("bn2", "kobo04-test-bn2", "iscope_beta", "nazhan_runtime_0319", "716dce6f-8931-4efd-a880-20ef6844f029");
+            var machine = string.Empty;
+            var test = JobDiagnosticProcessor.Instance.FetchJobProfile("bn2", "kobo04-test-bn2", "iscope_default", "nazhan_runtime_0429", "22fb30fc-4305-4426-a51c-8ed47a104481", out machine);
 
             // Assert
             Assert.IsNotNull(test);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void FetchJmDispatcherLog()
         {
             var test = JobDiagnosticProcessor.Instance.FetchJmDispatcherLog("bn2", "kobo04-test-bn2", DateTime.Parse("04/13/2015 15:40:00"), DateTime.Parse("04/13/2015 15:45:00"));
@@ -80,6 +87,35 @@ namespace KiwiBoard.Tests.Controllers
             Task.WaitAll(tasks.ToArray());
 
             Assert.IsTrue(tasks.All(t => t.Result != null));
+        }
+
+        [TestMethod]
+        public void GetJobAnalyzerResult()
+        {
+            var test = JobDiagnosticProcessor.Instance.GetJobAnalyzerResult(@"C:\Users\v-dayow\Desktop\profile_{076EC92E-A8F5-4E73-ACC1-180102B0747F}.txt");
+            
+            Assert.IsNotNull(test);
+        }
+
+        [TestMethod]
+        public void JobAnalyzerTest()
+        {
+            var profile = @"C:\Users\v-dayow\Desktop\profile.tmp";
+            var profileString = PhxAutomation.Instance.RunScript(@"'BN4SCH103200843' | Read-PhxFile 'data\JobManagerService\kobo04-test-bn2\iscope_Default\nazhan_runtime_0504_disablebroadcast2\profile_{2088fdaf-465a-4887-8f83-f81709c75eda}.txt'");
+            File.WriteAllText(profile, profileString);
+            //var profileString = File.ReadAllText(profile);
+            var output = JobDiagnosticProcessor.Instance.ParseAnalyzerJobFromProfile(profileString);
+
+        }
+
+        public Stream GenerateStreamFromString(string s)
+        {
+             MemoryStream stream = new MemoryStream();
+            StreamWriter writer = new StreamWriter(stream);
+            writer.Write(s);
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
         }
     }
 }
