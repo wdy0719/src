@@ -169,6 +169,14 @@
     .bgcolor {
         background-color:#f5f5f5;
     } 
+
+    .dl-horizontal dt{
+        width:100px !important;
+    }
+
+    .dl-horizontal dd{
+        margin-left:110px !important;
+    }
 </style>
 
 @section Scripts
@@ -237,11 +245,12 @@
                             jobObj.EndTime = jobObj.Stages[jobObj.Stages.length - 1].EndTime;
                             jobObj.Duration = (Date.parse(jobObj.EndTime) - Date.parse(jobObj.StartTime)) / 1000;
                             $.each(jobObj.Stages, function (k, stage) {
-                                var stageHtml = "";
+                                var stageHtml = '<dl class="dl-horizontal">';
                                 $.each(stage, function (m, prop) {
                                     prop = prop == null ? "null" : prop.replace(/\</g, '&lt;');  //escape html
-                                    stageHtml += "<strong>" + m + ": </strong>" + prop + "</br>"; // format 
+                                    stageHtml += '<dt>' + m + ": </dt>" + "<dd>" + prop + '</dd>';  // format
                                 });
+                                stageHtml += '</dl>';
 
                                 jobObj['Stages_' + k] = stageHtml; // JSON.stringify(stage);
                             });
