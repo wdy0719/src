@@ -90,6 +90,7 @@
                         <th data-field="MachineName" >Machine</th>
                         <th data-field="TargetCosmosCluster" >Cosmos Cluster</th>
                         @*<th data-field="legacyVC">Legacy VC</th>*@
+                        <th data-field="Duration">Duration (s)</th>
                         <th data-field="ProfileLog" data-align="center">Profile Log</th>
                         <th data-field="JMDispatcherLog" data-align="center">JM Dispatcher Log</th>
                     </tr>
@@ -234,6 +235,7 @@
                         if (jobObj.Stages != null) {
                             jobObj.StartTime = jobObj.Stages[0].StartTime;
                             jobObj.EndTime = jobObj.Stages[jobObj.Stages.length - 1].EndTime;
+                            jobObj.Duration = (Date.parse(jobObj.EndTime) - Date.parse(jobObj.StartTime)) / 1000;
                             $.each(jobObj.Stages, function (k, stage) {
                                 var stageHtml = "";
                                 $.each(stage, function (m, prop) {
