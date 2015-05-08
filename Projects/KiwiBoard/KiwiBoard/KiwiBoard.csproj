@@ -176,7 +176,6 @@
     <Compile Include="BL\PhxAutomation.cs" />
     <Compile Include="BL\Utils.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\ToolsController.cs" />
     <Compile Include="Controllers_API\DefaultController.cs" />
     <Compile Include="Controllers_API\KiwiTestJobController.cs" />
@@ -202,6 +201,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>KiwiBoard.edmx</DependentUpon>
     </Compile>
+    <Compile Include="Models\Shared\GridViewModel.cs" />
     <Compile Include="Models\Tools\CsLogViewModel.cs" />
     <Compile Include="Models\Tools\JobStateViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -438,13 +438,14 @@
     <Content Include="Views\Tools\CsLogView.cshtml" />
     <Content Include="Views\Tools\JobStateView.cshtml" />
     <Content Include="Views\Tools\JobProfileView.cshtml" />
-    <Content Include="Views\Reports\ISQLIPPerfTest.cshtml" />
     <Content Include="Views\Tools\Test.cshtml" />
+    <Content Include="Views\Shared\GridView.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\" />
     <Folder Include="Views\KiwiTestJob\" />
     <Folder Include="Views\KiwiTestResult\" />
+    <Folder Include="Views\Reports\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />

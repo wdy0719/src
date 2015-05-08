@@ -66,11 +66,11 @@
         </div>
 
         <div class="row" style="padding:5px 15px 5px 15px;">
-            <table id="table_jobState" class="bootstrap-table"
+            <table id="table_jobState" class="bootstrap-table small"
                    data-toggle="table"
                    @*data-url="@Url.Content( string.Format("~/api/PhxUtils/Test_JobStates/{0}/{1}",Model.Environment,Model.Runtime ))"*@
                    data-search="true"
-                   data-height="400"
+                   @*data-height="400"*@
                    @*data-click-to-select="true"
                    data-single-select="true"*@
                    data-pagination="true"
@@ -79,23 +79,19 @@
                    data-sort-order="desc"
                    @*data-search-align="left"*@>
                 <thead>
-                    <tr>
-                        @*@foreach (var prop in typeof(KiwiBoard.Entities.JobStatesJobsJob).GetProperties())
-                    {
-                        <th data-field="@prop.Name" data-sortable="true">@prop.Name</th>
-                    }*@
-                        <th data-field="DateTime" data-sortable="true">DateTime</th>
+                    <tr class="active">
+                        <th data-field="DateTime" data-sortable="true" data-sorter="dateTimeSorter">DateTime</th>
                         <th data-field="Guid">Job Id</th>
-                        <th data-field="JobType">Job Type</th>
-                        <th data-field="JobSubType">Job SubType</th>
+                        <th data-field="JobType" >Job Type</th>
+                        <th data-field="JobSubType" >Job SubType</th>
                         <th data-field="DereferencedRuntime">Dereferenced Runtime</th>
-                        <th data-field="UserName">User Name</th>
+                        <th data-field="UserName" >User Name</th>
                         @*<th data-field="ClientMachine">Client Machine</th>*@
-                        <th data-field="MachineName">Machine</th>
-                        <th data-field="TargetCosmosCluster">Cosmos Cluster</th>
+                        <th data-field="MachineName" >Machine</th>
+                        <th data-field="TargetCosmosCluster" >Cosmos Cluster</th>
                         @*<th data-field="legacyVC">Legacy VC</th>*@
-                        <th data-field="ProfileLog">Profile Log</th>
-                        <th data-field="JMDispatcherLog">JM Dispatcher Log</th>
+                        <th data-field="ProfileLog" data-align="center">Profile Log</th>
+                        <th data-field="JMDispatcherLog" data-align="center">JM Dispatcher Log</th>
                     </tr>
                 </thead>
             </table>
@@ -113,7 +109,7 @@
     <div class="panel-body">
         <div class="row" style="padding:5px 15px 5px 15px;">
             <table id="DetailsTable"
-                   class="bootstrap-table bgcolor"
+                   class="bootstrap-table bgcolor small"
                    data-toggle="table"
                    data-card-view="true">
                 <thead>
@@ -169,26 +165,6 @@
         line-height: 1.5 !important;
     }
 
-
-    .bootstrap-table {
-        color: #555 !important;
-        font-size: 11.5px;
-        font-weight: 100;
-    }
-
-    .fixed-table-header {
-        background-color: #f5f5f5;
-        line-height: 0.7 !important;
-        font-weight: bold;
-        height: 35px;
-    }
-
-    .fixed-table-body td {
-        font-weight: 100;
-        line-height: 0.7 !important;
-        white-space: nowrap;
-    }
-
     .bgcolor {
         background-color:#f5f5f5;
     } 
@@ -221,7 +197,8 @@
                         var jobs = FlatJobStates(data);
                         jobStateTable.bootstrapTable('load', jobs);
                     })
-                    .error(function(err){
+                    .error(function (err) {
+                        alert('Loading data error: ' + err.responseText);
                         jobStateTable.bootstrapTable('load', []);
                     })
                     .always(function () {
@@ -271,11 +248,11 @@
 
                         // create profile link
                         var link = location.protocol + '//' + location.host + '/' + 'tools/jobprofile/' + jobObj.TargetAPCluster + '/' + jobObj.TargetCosmosCluster + '/' + jobObj.Runtime + '/' + jobObj.DereferencedRuntime + '/' + jobObj.Guid;
-                        jobObj.ProfileLog = '<a href="' + link + '" target="_blank">profile</a>';
+                        jobObj.ProfileLog = '<a style="text-decoration: none" class="glyphicon glyphicon-search" href="' + link + '" target="_blank"></a>';
 
                         // create CsLog link
                         var jmDispatcherLog = location.protocol + '//' + location.host + '/' + 'tools/CsLog/' + jobObj.TargetAPCluster + '/' + jobObj.TargetCosmosCluster + "?startTime='" + jobObj.StartTime + "'&endtime='" + jobObj.EndTime + "'&searchPattern=" + "*JobManagerDispatcher*";
-                        jobObj.JMDispatcherLog = '<a href="' + jmDispatcherLog + '" target="_blank">JMDispatcher Log</a>';
+                        jobObj.JMDispatcherLog = '<a  style="text-decoration: none" class="glyphicon glyphicon-search" href="' + jmDispatcherLog + '" target="_blank"></a>';
 
                         flagJobs.push(jobObj);
                     });
@@ -318,6 +295,14 @@
                 return {classes: 'danger'};
             }
             return {};
+        }
+
+        function dateTimeSorter(a, b) {
+            var aDate = new Date(a);
+            var bDate = new Date(b);
+            if (aDate > bDate) return 1;
+            if (aDate < bDate) return -1;
+            return 0;
         }
     </script>
 }

@@ -18,7 +18,7 @@
 .table>thead>tr>td,
 .table>tbody>tr>td,
 .table>tfoot>tr>td {
-    padding: 8px !important;
+    padding: 2px !important;
 }
 
 .fixed-table-container {
@@ -72,7 +72,7 @@
 }
 
 .fixed-table-container thead th .th-inner {
-    padding: 8px;
+    padding: 3px;
     line-height: 24px;
     vertical-align: top;
     overflow: hidden;
@@ -106,7 +106,7 @@
 }
 
 .fixed-table-container .bs-checkbox .th-inner {
-    padding: 8px 0;
+    padding: 3px 0;
 }
 
 .fixed-table-container input[type="radio"],

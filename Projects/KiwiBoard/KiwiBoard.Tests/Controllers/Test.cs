@@ -101,12 +101,20 @@ namespace KiwiBoard.Tests.Controllers
         public void JobAnalyzerTest()
         {
             var profile = @"C:\Users\v-dayow\Desktop\profile.tmp";
-            var profileString = PhxAutomation.Instance.RunScript(@"'BN4SCH103200843' | Read-PhxFile 'data\JobManagerService\kobo04-test-bn2\iscope_Default\nazhan_runtime_0504_disablebroadcast2\profile_{2088fdaf-465a-4887-8f83-f81709c75eda}.txt'");
-            File.WriteAllText(profile, profileString);
-            //var profileString = File.ReadAllText(profile);
+           // var profileString = PhxAutomation.Instance.RunScript(@"'BN4SCH103200843' | Read-PhxFile 'data\JobManagerService\kobo04-test-bn2\iscope_Default\nazhan_runtime_0504_disablebroadcast2\profile_{2088fdaf-465a-4887-8f83-f81709c75eda}.txt'");
+            //File.WriteAllText(profile, profileString);
+            var profileString = File.ReadAllText(profile);
             var output = JobDiagnosticProcessor.Instance.ParseAnalyzerJobFromProfile(profileString);
 
         }
+
+
+        [TestMethod]
+        public void GetProfileObj()
+        {
+            var test = new PhxUtilsController().GetProfileProcesses("bn2", "kobo04-test-bn2", "IScope_Default", "nazhan_runtime_0505", "3225b9d1-8147-4fe2-b3d5-58a06063b547").Result;
+        }
+
 
         public Stream GenerateStreamFromString(string s)
         {

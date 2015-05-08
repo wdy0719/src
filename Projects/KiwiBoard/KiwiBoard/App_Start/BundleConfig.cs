@@ -27,13 +27,13 @@ namespace KiwiBoard
                       "~/Scripts/ZeroClipboard.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/bootstraptable").Include(
-                      "~/Content/bootstrap-table/bootstrap-table.min.js",
-                      "~/Content/bootstrap-table/locale/bootstrap-table-en-US.min.js"));
+                      "~/Content/bootstrap-table/bootstrap-table.js",
+                      "~/Content/bootstrap-table/locale/bootstrap-table-en-US.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/jquery.*",
                       "~/Content/bootstrap.css",
-                      "~/Content/bootstrap-table/bootstrap-table.min.css",
+                      "~/Content/bootstrap-table/bootstrap-table.css",
                       "~/Content/site.css"
                       ));
         }

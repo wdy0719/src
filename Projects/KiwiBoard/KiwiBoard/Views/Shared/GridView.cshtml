@@ -1,0 +1,28 @@
+﻿@model KiwiBoard.Models.Shared.GridViewModel
+
+@{
+    
+    ViewBag.TableId = Guid.NewGuid().ToString();
+    
+}
+
+
+<table id="@ViewBag.TableId" class="bootstrap-table small"
+       data-toggle="table"
+       data-card-view="false"
+       data-show-columns="true"
+       data-pagination="@Model.Pagination" >
+    <thead>
+        <tr class="active">
+     
+        </tr>
+    </thead>
+</table>
+
+<script>
+    $(document).ready(function () {
+
+  
+    });
+
+</script>

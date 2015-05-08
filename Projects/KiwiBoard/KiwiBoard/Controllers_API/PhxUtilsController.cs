@@ -93,15 +93,86 @@ namespace KiwiBoard.Controllers_API
         }
 
         [HttpGet]
-        [Route("GetProfileObj/{apcluster}/{environment}/{runtime}/{runtimeCodeName}/{jobId:guid}")]
-        public async Task<dynamic> GetProfileObj(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
+        [Route("GetProfileProcesses/{apcluster}/{environment}/{runtime}/{runtimeCodeName}/{jobId:guid}")]
+        public async Task<dynamic> GetProfileProcesses(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
         {
             return await this.handleExceptions(() =>
             {
 
                 var onMachine = string.Empty;
                 var profile = JobDiagnosticProcessor.Instance.FetchJobProfile(apcluster, environment, runtime, runtimeCodeName, jobId, out onMachine);
-                return JobDiagnosticProcessor.Instance.ParseAnalyzerJobFromProfile(profile);
+                // var profile = File.ReadAllText(@"C:\Users\v-dayow\Desktop\profile.tmp");
+                var profileJob = JobDiagnosticProcessor.Instance.ParseAnalyzerJobFromProfile(profile);
+
+                //// unflatted obj
+                //var stages = profileJob.Stages.Select(s => new
+                //{
+                //    StageName = s.StageName,
+                //    Vertices = s.Vertices.Select(v => new
+                //    {
+                //        VertexName = v.Key,
+                //        UpVertices = v.Value.UpVertices.Select(upv => upv.VertexName).ToArray(),
+                //        DownVertices = v.Value.DownVertices.Select(dnv => dnv.VertexName).ToArray(),
+                //        Processes = v.Value.Versions.Select(p => new
+                //        {
+                //            Guid = p.Guid,
+                //            Name = p.Name,
+                //            Machine = p.Machine,
+                //            RuntimeStats = p.RuntimeStats,
+                //            ProcessStartTime = p.ProcessStartTime,
+                //            ProcessCompleteTime = p.ProcessCompleteTime,
+                //            ExitStatus = p.ExitStatus,
+                //            CommentOnVertexLatencies = p.CommentOnVertexLatencies,
+                //            CreationReason = p.CreationReason,
+                //            CreatorVertexName = p.CreatorVertexName,
+                //            TotalDataRead = p.TotalDataRead,
+                //            TotalDataWritten = p.TotalDataWritten
+                //        }).ToArray()
+                //    }).ToArray(),
+                //});
+
+                //return new
+                //{
+                //    Summary = profileJob.JobTimingStats,
+                //    IsComplete = profileJob.IsComplete,
+                //    Algebra = profileJob.Algebra,
+                //    Stages = stages.ToArray(),
+                //    CriticalPath = profileJob.CriticalPath().Select(cp => cp.Guid).ToArray()
+                //};
+
+                var criticalPath = profileJob.CriticalPath().Select(p=>p.Guid);
+                var processes = profileJob.Processes.Select(p => new
+                {
+                    StageName = p.Vertex.Stage.StageName,
+                    VertexName = p.VertexName,
+                    Guid = p.Guid,
+                    Name = p.Name,
+                    Machine = p.Machine,
+                    RuntimeStats = p.RuntimeStats,
+                    ProcessStartTime = p.ProcessStartTime,
+                    ProcessCompleteTime = p.ProcessCompleteTime,
+                    ExitStatus = p.ExitStatus,
+                    CommentOnVertexLatencies = p.CommentOnVertexLatencies,
+                    CreationReason = p.CreationReason,
+                    CreatorVertexName = p.CreatorVertexName,
+                    TotalDataRead = p.TotalDataRead,
+                    TotalDataWritten = p.TotalDataWritten,
+                    IsCriticalPath=criticalPath.Contains(p.Guid),
+
+                    UpVertices = p.Vertex.UpVertices.Select(upv => upv.VertexName).ToArray(),
+                    DownVertices = p.Vertex.DownVertices.Select(dnv => dnv.VertexName).ToArray(),
+                });
+
+                return new
+                {
+                    Summary = profileJob.JobTimingStats,
+                    IsComplete = profileJob.IsComplete,
+                    Algebra = profileJob.Algebra,
+                    ProfileLocation = onMachine,
+                    CriticalPath = profileJob.CriticalPath().Select(cp => cp.Guid).ToArray(),
+                    Processes = processes.ToArray()
+                };
+
             });
         }
 
