@@ -20,12 +20,12 @@
 
         <div class="row" style="padding:5px 15px 5px 15px;">
             <table id="csLogsTable"
-                   class="bootstrap-table"
+                   class="bootstrap-table small"
                    data-url="@ViewBag.QueryUrl"
                    data-toggle="table"
                    >
                 <thead>
-                    <tr>
+                    <tr class="active">
                         @foreach (var prop in typeof(KiwiBoard.Entities.CsLog).GetProperties())
                         {
                             <th data-field="@prop.Name" data-sortable="true">@prop.Name</th>
