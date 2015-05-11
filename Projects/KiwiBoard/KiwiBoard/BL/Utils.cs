@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Web;
 using System.Web.Configuration;
+using System.Xml.Serialization;
 
 namespace KiwiBoard.BL
 {
@@ -97,20 +98,22 @@ namespace KiwiBoard.BL
 
         public static T XmlDeserialize<T>(string xmlString) where T : class
         {
-            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(Entities.JobStates));
+            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(T));
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlString)))
             {
                 return serializer.Deserialize(stream) as T;
             }
         }
 
-        public static string XmlSerialize(object entity)
+        public static string XmlSerialize<T>(T entity) where T : class
         {
-            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(Entities.JobStates));
+            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(T));
+            var ns = new XmlSerializerNamespaces();
+            ns.Add("", "");
             using (var stream = new MemoryStream())
             using (var streamReader = new StreamReader(stream))
             {
-                serializer.Serialize(stream, entity);
+                serializer.Serialize(stream, entity, ns);
                 stream.Flush();
                 return streamReader.ReadToEnd();
             }

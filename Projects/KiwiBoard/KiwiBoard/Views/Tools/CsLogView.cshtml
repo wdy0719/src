@@ -21,9 +21,11 @@
         <div class="row" style="padding:5px 15px 5px 15px;">
             <table id="csLogsTable"
                    class="bootstrap-table small"
+                   data-search="true"
+                   data-pagination="true"
+                   data-show-columns="true"
                    data-url="@ViewBag.QueryUrl"
-                   data-toggle="table"
-                   >
+                   data-toggle="table">
                 <thead>
                     <tr class="active">
                         @foreach (var prop in typeof(KiwiBoard.Entities.CsLog).GetProperties())

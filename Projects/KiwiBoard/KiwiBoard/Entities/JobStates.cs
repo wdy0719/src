@@ -11,13 +11,13 @@ namespace KiwiBoard.Entities
     public partial class JobStates
     {
 
-        private JobStatesJobs[] jobsField;
+        private Jobs[] jobsField;
 
         private string environmentField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("Jobs")]
-        public JobStatesJobs[] Jobs
+        public Jobs[] Jobs
         {
             get
             {
@@ -46,16 +46,17 @@ namespace KiwiBoard.Entities
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class JobStatesJobs
+    [System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false)]
+    public partial class Jobs
     {
 
-        private JobStatesJobsJob[] jobField;
+        private Job[] jobField;
 
         private string machineNameField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("Job")]
-        public JobStatesJobsJob[] Job
+        public Job[] Job
         {
             get
             {
@@ -84,7 +85,7 @@ namespace KiwiBoard.Entities
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class JobStatesJobsJob
+    public partial class Job
     {
 
         private string dateTimeField;
@@ -109,7 +110,7 @@ namespace KiwiBoard.Entities
 
         private string targetCosmosClusterField;
 
-        private JobStatesJobsJobRuntime runtimeField;
+        private JobRuntime runtimeField;
 
         private string scriptField;
 
@@ -131,7 +132,7 @@ namespace KiwiBoard.Entities
 
         private byte compilationResultUploadLatencyField;
 
-        private JobStatesJobsJobStage[] stagesField;
+        private JobStage[] stagesField;
 
         private object classificationInfoField;
 
@@ -279,7 +280,7 @@ namespace KiwiBoard.Entities
         }
 
         /// <remarks/>
-        public JobStatesJobsJobRuntime Runtime
+        public JobRuntime Runtime
         {
             get
             {
@@ -424,7 +425,7 @@ namespace KiwiBoard.Entities
 
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Stage", IsNullable = false)]
-        public JobStatesJobsJobStage[] Stages
+        public JobStage[] Stages
         {
             get
             {
@@ -452,7 +453,7 @@ namespace KiwiBoard.Entities
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class JobStatesJobsJobRuntime
+    public partial class JobRuntime
     {
 
         private string dereferencedField;
@@ -490,7 +491,7 @@ namespace KiwiBoard.Entities
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class JobStatesJobsJobStage
+    public partial class JobStage
     {
 
         private string diagnosticInfoField;

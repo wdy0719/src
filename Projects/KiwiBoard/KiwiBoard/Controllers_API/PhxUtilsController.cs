@@ -20,9 +20,9 @@ namespace KiwiBoard.Controllers_API
     {
         [HttpGet]
         [Route("JobStates/{environment}/{runtime}/{machine}/{jobId}")]
-        public async Task<IEnumerable<Entities.JobStatesJobs>> JobStates(string environment, string runtime, string machine, string jobId)
+        public async Task<IEnumerable<Entities.Jobs>> JobStates(string environment, string runtime, string machine, string jobId)
         {
-            return await this.handleExceptions<IEnumerable<Entities.JobStatesJobs>>(() =>
+            return await this.handleExceptions<IEnumerable<Entities.Jobs>>(() =>
             {
                 if (machine.ToLower() == "all")
                 {
@@ -36,7 +36,7 @@ namespace KiwiBoard.Controllers_API
                 }
                 else
                 {
-                    var result = new List<Entities.JobStatesJobs>();
+                    var result = new List<Entities.Jobs>();
                     foreach (var job in jobs)
                         if (job.Job != null)
                         {
@@ -44,8 +44,8 @@ namespace KiwiBoard.Controllers_API
                             {
                                 if (jobstate.Guid.ToLower() == jobId.ToLower())
                                 {
-                                    var expectedJobs = new Entities.JobStatesJobsJob[] { jobstate };
-                                    result.Add(new Entities.JobStatesJobs { Job = expectedJobs, MachineName = job.MachineName });
+                                    var expectedJobs = new Entities.Job[] { jobstate };
+                                    result.Add(new Entities.Jobs { Job = expectedJobs, MachineName = job.MachineName });
                                     return result;
                                 }
                             }
@@ -58,10 +58,10 @@ namespace KiwiBoard.Controllers_API
 
         [HttpGet]
         [Route("Test_JobStates/{environment}/{runtime}")]
-        public IEnumerable<Entities.JobStatesJobs> Test_JobStates(string environment, string runtime)
+        public IEnumerable<Entities.Jobs> Test_JobStates(string environment, string runtime)
         {
             JavaScriptSerializer jss = new JavaScriptSerializer();
-            var result = jss.Deserialize<Entities.JobStatesJobs[]>(File.ReadAllText(HttpContext.Current.Server.MapPath(@"~/app_data/jobstates.json")));
+            var result = jss.Deserialize<Entities.Jobs[]>(File.ReadAllText(HttpContext.Current.Server.MapPath(@"~/app_data/jobstates.json")));
             return result;
         }
 

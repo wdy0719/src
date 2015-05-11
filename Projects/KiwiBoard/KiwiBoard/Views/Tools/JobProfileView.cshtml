@@ -99,9 +99,65 @@
     @*<script>hljs.initHighlightingOnLoad();</script>*@
 
     <script>
-        $(document).ready(function () {
-            var preSelected = null;
-            $('#table_Profile').on('click-row.bs.table', function (e, name, args) {
+    var preSelected = null;
+    $(document).ready(function () {
+
+        loadProfileObj();
+
+        registryOnClickRowEvent();
+    });
+
+    function loadProfileObj(url) {
+        var url = "/api/phxutils/GetProfileProcesses/@ViewBag.apCluster/@ViewBag.environment/@ViewBag.runtime/@ViewBag.dereferencedRuntime/@ViewBag.jobId";
+        var profileTable = $('#table_Profile');
+
+        ajaxindicatorstart();
+        profileTable.bootstrapTable('showLoading');
+        $.getJSON(url, function () { })
+            .done(function (data) {
+                if (data==null || data.ProfileLocation == "")
+                    return;
+
+                // set machine info
+                $('#info').text($('#info').text() + ";      Profile on machine: " + data.ProfileLocation);
+
+                // show algebra
+                if (data.Algebra != null) {
+                    $('#algebraCode').text(data.Algebra.replace(/\<br\/\>/g, '\n').replace(/\r/g, '').replace(/\t/g, '  '));
+                    highlightBlock();
+                }
+
+                // load data to table
+                profileTable.bootstrapTable('load', data.Processes);
+                var rows = $('#table_Profile tbody tr')
+                var cols = rows.first().children().length;
+
+                // hightlight critical path
+                //$.each(rows, function (index, row) {
+                //    if ($.inArray(data.Processes[index].Guid, data.CriticalPath) > -1) {
+                //        rows[index].className = 'warning';
+                //    }
+                //});
+
+                //
+
+            })
+            .error(function (err) {
+                alert('Loading data error: ' + err.responseText);
+                $('#profileLog').html("Error: " + err.responseText);
+            })
+            .always(function () {
+                ajaxindicatorstop();
+                profileTable.bootstrapTable('hideLoading');
+            });
+    }
+
+    function registryOnClickRowEvent() {
+        $('#table_Profile').on('click-row.bs.table', function (e, name, args) {
+
+            ajaxindicatorstart();
+
+            try {
                 if (preSelected != null) {
                     preSelected.removeClass('active');
                 }
@@ -135,74 +191,30 @@
                         return
                     }
                 });
-            })
-
-            loadProfileObj();
+            }
+            finally {
+                ajaxindicatorstop();
+            }
         });
+    }
 
+    function highlightBlock() {
+        $('pre code').each(function (i, block) {
+            hljs.highlightBlock(block);
+        });
+    }
 
-        function loadProfileObj() {
-            var url = "/api/phxutils/GetProfileProcesses/@ViewBag.apCluster/@ViewBag.environment/@ViewBag.runtime/@ViewBag.dereferencedRuntime/@ViewBag.jobId";
-            var profileTable = $('#table_Profile');
+    function ajaxindicatorstart() {
+        $('body').css('cursor', 'wait');
+        $("input").prop('disabled', true);
+        $("button").prop('disabled', true);
+    }
 
-            ajaxindicatorstart();
-            profileTable.bootstrapTable('showLoading');
-            $.getJSON(url, function () { })
-                .done(function (data) {
-                    if (data==null || data.ProfileLocation == "")
-                        return;
-
-                    // set machine info
-                    $('#info').text($('#info').text() + ";      Machine: " + data.ProfileLocation);
-
-                    // show algebra
-                    if (data.Algebra != null) {
-                        $('#algebraCode').text(data.Algebra.replace(/\<br\/\>/g, '\n').replace(/\r/g, '').replace(/\t/g, '  '));
-                        highlightBlock();
-                    }
-
-                    // load data to table
-                    profileTable.bootstrapTable('load', data.Processes);
-                    var rows = $('#table_Profile tbody tr')
-                    var cols = rows.first().children().length;
-
-                    // hightlight critical path
-                    //$.each(rows, function (index, row) {
-                    //    if ($.inArray(data.Processes[index].Guid, data.CriticalPath) > -1) {
-                    //        rows[index].className = 'warning';
-                    //    }
-                    //});
-
-                    //
-
-                })
-                .error(function (err) {
-                    alert('Loading data error: ' + err.responseText);
-                    $('#profileLog').html("Error: " + err.responseText);
-                })
-                .always(function () {
-                    ajaxindicatorstop();
-                    profileTable.bootstrapTable('hideLoading');
-                });
-        }
-
-        function highlightBlock() {
-            $('pre code').each(function (i, block) {
-                hljs.highlightBlock(block);
-            });
-        }
-
-        function ajaxindicatorstart() {
-            $('body').css('cursor', 'wait');
-            $("input").prop('disabled', true);
-            $("button").prop('disabled', true);
-        }
-
-        function ajaxindicatorstop() {
-            $("input").prop('disabled', false);
-            $("button").prop('disabled', false);
-            $('body').css('cursor', 'auto');
-        }
+    function ajaxindicatorstop() {
+        $("input").prop('disabled', false);
+        $("button").prop('disabled', false);
+        $('body').css('cursor', 'auto');
+    }
     </script>
 
     @*<script>

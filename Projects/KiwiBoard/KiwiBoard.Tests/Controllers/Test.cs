@@ -35,22 +35,23 @@ namespace KiwiBoard.Tests.Controllers
         [TestMethod]
         public void RunScriptWithDynamicOutput()
         {
-            var test = PhxAutomation.Instance.RunScript(@"'BN4SCH103200743' | Read-PhxFile 'data\JobManagerService\kobo04-test-bn2\iscope_Default\nazhan_runtime_0429\profile_{80d1b50f-f5c2-4a00-b442-91f19c41a294}.txt'");
+            var test = PhxAutomation.DefaultInstance.RunScript<dynamic>(@"'BN4SCH103200843' | Read-PhxFile 'data\JobManagerService\kobo04-test-bn2\iscope_Default\nazhan_runtime_0427\profile_{FE74530A-8574-44A8-89F1-EE8F7394A76E}.txt'").ToArray();
+
         }
 
         [TestMethod]
         public void FetchIscopeJobStateXml()
         {
-           var test = PhxAutomation.Instance.FetchIscopeJobStateXml(new string[] { "BN4SCH103190147", "BN4SCH103190148" }, "IScope_default");
+            var test = PhxAutomation.DefaultInstance.FetchIscopeJobStateXml("IScope_default", "BN4SCH103190147", "BN4SCH103190148");
 
-           test =Regex.Replace(test, @"<\?xml.*\?>", Environment.NewLine);
             Assert.IsNotNull(test);
         }
 
         [TestMethod]
         public void FetchProfileLog()
         {
-            var test = PhxAutomation.Instance.TryFetchProfileLog("kobo04-test-bn2", "iscope_default", "nazhan_runtime_0427", "866ff0de-9161-4bf3-bf57-aa65bf549dc0", "BN4SCH103200743");
+            var m = string.Empty;
+            var test = PhxAutomation.DefaultInstance.SearchProfileLog("kobo04-test-bn2", "iscope_default", "nazhan_runtime_0427", "FE74530A-8574-44A8-89F1-EE8F7394A76E", out m, "BN4SCH103200743", "BN4SCH103200843");
 
             // Assert
             Assert.IsNotNull(test);
@@ -74,20 +75,6 @@ namespace KiwiBoard.Tests.Controllers
             Assert.IsNotNull(test);
         }
 
-
-        [TestMethod]
-        public void ExeScriptInMultiThread()
-        {
-            var tasks = new List<Task<string>>();
-            for (int i = 10; i > 0; i--)
-            {
-                tasks.Add(Task.Run<string>(() => PhxAutomation.Instance.FetchIscopeJobStateXml(new string[] { "BN4SCH103190147", "BN4SCH103190148" }, "IScope_default")));
-            }
-
-            Task.WaitAll(tasks.ToArray());
-
-            Assert.IsTrue(tasks.All(t => t.Result != null));
-        }
 
         [TestMethod]
         public void GetJobAnalyzerResult()
@@ -115,6 +102,13 @@ namespace KiwiBoard.Tests.Controllers
             var test = new PhxUtilsController().GetProfileProcesses("bn2", "kobo04-test-bn2", "IScope_Default", "nazhan_runtime_0505", "3225b9d1-8147-4fe2-b3d5-58a06063b547").Result;
         }
 
+        [TestMethod]
+        public void ReadPhxFile()
+        {
+            var files = PhxAutomation.DefaultInstance.ReadPhxFileAsCsv(@"data\JobManagerService\kobo04-test-bn2\iscope_beta\nazhan_runtime_0319\profile_{*}.txt", "BN4SCH103200743", "BN4SCH103200843").ToArray();
+
+            var categoires = files.Select(f => f.filename.Split('_')[0]).Distinct();
+        }
 
         public Stream GenerateStreamFromString(string s)
         {

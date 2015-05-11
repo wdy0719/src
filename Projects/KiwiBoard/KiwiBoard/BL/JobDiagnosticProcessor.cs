@@ -51,15 +51,13 @@ namespace KiwiBoard.BL
                 throw new ArgumentException("Machine not found in given envrionment.");
             }
 
-            var stateXml = PhxAutomation.Instance.FetchIscopeJobStateXml(machines, runtime);
-            stateXml = Regex.Replace(stateXml, @"<\?xml.*\?>", Environment.NewLine);
-            stateXml = string.Format("<JobStates Environment=\"{0}\">", environment) + stateXml + "</JobStates>";
-            var jobStates = Utils.XmlDeserialize<Entities.JobStates>(stateXml);
+            var stateXmls = PhxAutomation.DefaultInstance.FetchIscopeJobStateXml(runtime, machines);
+            var jobXmls = stateXmls.Select(x => Utils.XmlDeserialize<Entities.Jobs>(x.OuterXml)).ToArray();
 
-            return jobStates;
+            return new Entities.JobStates() { Environment = environment, Jobs = jobXmls };
         }
 
-        public  Entities.JobStatesJobsJob FetchJobStateByIdFromEnvrionment(string environment, string runtime, string jobId)
+        public  Entities.Job FetchJobStateByIdFromEnvrionment(string environment, string runtime, string jobId)
         {
             if (string.IsNullOrEmpty(environment) || string.IsNullOrEmpty(runtime) || string.IsNullOrEmpty(jobId))
             {
@@ -68,7 +66,7 @@ namespace KiwiBoard.BL
 
             var cacheName = string.Join("_", environment, runtime);
 
-            Entities.JobStatesJobsJob result = this.FetchJobStateFromCache(cacheName, jobId);
+            Entities.Job result = this.FetchJobStateFromCache(cacheName, jobId);
 
             if (result == null)
             {
@@ -80,7 +78,7 @@ namespace KiwiBoard.BL
             return result;
         }
 
-        public string FetchJobProfile(Entities.JobStatesJobsJob jobState)
+        public string FetchJobProfile(Entities.Job jobState)
         {
             if (jobState == null)
             {
@@ -102,17 +100,7 @@ namespace KiwiBoard.BL
             machineName = string.Empty;
             var jmMachines = Utils.GetFunctionMachines(apCluster, cosmosCluster, "JM");
 
-            foreach (var machine in jmMachines)
-            {
-                var profileTxt = PhxAutomation.Instance.TryFetchProfileLog(cosmosCluster, runtime, runtimeCodeName, jobId, machine);
-                if (!string.IsNullOrEmpty(profileTxt))
-                {
-                    machineName = machine;
-                    return profileTxt;
-                }
-            }
-
-            return string.Empty;
+            return PhxAutomation.DefaultInstance.SearchProfileLog(cosmosCluster, runtime, runtimeCodeName, jobId, out machineName, jmMachines);
         }
 
         public JobAnalyzer.Job ParseAnalyzerJobFromProfile(string profile)
@@ -136,7 +124,7 @@ namespace KiwiBoard.BL
             script += Environment.NewLine + "pushd " + workDir + ";";
             script += Environment.NewLine + "$b = Generate-IScopeJobSummary2 -profileFile \"" + profileFile + "\";";
             script += Environment.NewLine + "Get-Content .\\report_iscope.html";
-            return PhxAutomation.Instance.RunScript(script);
+            return string.Join(Environment.NewLine, PhxAutomation.DefaultInstance.RunScript<string>(script).ToArray());
         }
 
         public IEnumerable<Entities.CsLog> FetchCsLogs(string apCluster, string cosmosCluster, DateTime startTime, DateTime endTime, string searchPattern = "*")
@@ -147,7 +135,7 @@ namespace KiwiBoard.BL
             }
 
             var jmMachines = Utils.GetFunctionMachines(apCluster, cosmosCluster, "JM");
-            return PhxAutomation.Instance.FetchCsLogEntries(startTime, endTime, searchPattern, jmMachines);
+            return PhxAutomation.DefaultInstance.FetchCsLogEntries(startTime, endTime, searchPattern, jmMachines);
         }
 
         public IEnumerable<Entities.CsLog> FetchJmDispatcherLog(string apCluster, string cosmosCluster, DateTime startTime, DateTime endTime)
@@ -156,9 +144,9 @@ namespace KiwiBoard.BL
         }
 
         #region Private methods
-        private Entities.JobStatesJobsJob FetchJobStateFromCache(string cacheName, string jobId)
+        private Entities.Job FetchJobStateFromCache(string cacheName, string jobId)
         {
-            Entities.JobStatesJobsJob result = null;
+            Entities.Job result = null;
             if (string.IsNullOrEmpty(jobId))
             {
                 return result;
@@ -178,47 +166,6 @@ namespace KiwiBoard.BL
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Force get job state.xml from PHX machine and put in cache. returns XML content.
-        /// </summary>
-        private string ForceFetchAllJobStates(string machineName, string runtime)
-        {
-            if (string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(runtime))
-            {
-                throw new ArgumentNullException();
-            }
-
-            var cachedXmlFile = this.GetCachedIscopeJobStateXmlPath(machineName, runtime);
-
-            var stateXmlString = string.Empty;
-
-            try
-            {
-                stateXmlString = PhxAutomation.Instance.FetchIscopeJobStateXml(machineName, runtime);
-            }
-            catch (PhxAutomationException ex)
-            {
-                if (ex.ErrorCode == PhxAutomationErrorCode.MachineNotFound)
-                {
-                    throw new JobNotFoundException(ex.Message);
-                }
-
-                throw ex;
-            }
-
-            if (!string.IsNullOrEmpty(stateXmlString))
-            {
-                // write to cache.
-                this.WriteIscopeJobStateXmlCache(cachedXmlFile, stateXmlString);
-            }
-            else
-            {
-                throw new JobNotFoundException("Job state XML not found or empty. Please check machine and runtime name.");
-            }
-
-            return stateXmlString;
         }
 
         private XElement TryParseDesiredJobStateFromStateXml(string xmlString, string jobId)
