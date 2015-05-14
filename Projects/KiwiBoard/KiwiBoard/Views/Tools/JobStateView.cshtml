@@ -29,7 +29,7 @@
                 <div class="input-group input-group-sm">
                     <span class="input-group-addon">Runtime:</span>
                     <input id="runTime" type="text" class="form-control" placeholder="Runtime" data-toggle="dropdown" value="@KiwiBoard.BL.Settings.Runtimes.First()">
-                    <ul class="dropdown-menu" role="menu" id="runtimeMenu" onclick="@Layout='a'">
+                    <ul class="dropdown-menu" role="menu" id="runtimeMenu">
                         @foreach (var runtime in @KiwiBoard.BL.Settings.Runtimes)
                         {
                             <li><a href="#"><small>@runtime</small></a></li>
@@ -65,255 +65,253 @@
             </div>
         </div>
 
-        <div class="row" style="padding:5px 15px 5px 15px;">
-            <table id="table_jobState" class="bootstrap-table small"
-                   data-toggle="table"
-                   @*data-url="@Url.Content( string.Format("~/api/PhxUtils/Test_JobStates/{0}/{1}",Model.Environment,Model.Runtime ))"*@
-                   data-search="true"
-                   @*data-height="400"*@
-                   @*data-click-to-select="true"
+        <div class="row">
+            <div class="col-sm-12">
+                <table id="table_jobState" class="bootstrap-table small"
+                       data-toggle="table"
+                       @*data-url="@Url.Content( string.Format("~/api/PhxUtils/Test_JobStates/{0}/{1}",Model.Environment,Model.Runtime ))"*@
+                       data-search="true"
+                       @*data-height="400"*@
+                       @*data-click-to-select="true"
                    data-single-select="true"*@
-                   data-pagination="true"
-                   data-row-style="rowStyle"
-                   data-sort-name="DateTime"
-                   data-sort-order="desc"
-                   @*data-search-align="left"*@>
-                <thead>
-                    <tr class="active">
-                        <th data-field="DateTime" data-sortable="true" data-sorter="dateTimeSorter">DateTime</th>
-                        <th data-field="Guid">Job Id</th>
-                        <th data-field="JobType" >Job Type</th>
-                        <th data-field="JobSubType" >Job SubType</th>
-                        <th data-field="DereferencedRuntime">Dereferenced Runtime</th>
-                        <th data-field="UserName" >User Name</th>
-                        @*<th data-field="ClientMachine">Client Machine</th>*@
-                        <th data-field="MachineName" >Machine</th>
-                        <th data-field="TargetCosmosCluster" >Cosmos Cluster</th>
-                        @*<th data-field="legacyVC">Legacy VC</th>*@
-                        <th data-field="Duration">Duration(s)</th>
-                        <th data-field="ProfileLog" data-align="center">Profile Log</th>
-                        <th data-field="JMDispatcherLog" data-align="center">JM Dispatcher Log</th>
-                    </tr>
-                </thead>
-            </table>
-
-        </div>
-
-    </div>
-
-</div>
-
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3 class="panel-title">Job State Details</h3>
-    </div>
-    <div class="panel-body">
-        <div class="row" style="padding:5px 15px 5px 15px;">
-            <table id="DetailsTable"
-                   class="bootstrap-table bgcolor small"
-                   data-toggle="table"
-                   data-card-view="true">
-                <thead>
-                    <tr>
-                        <th data-field="Guid">Job Id:</th>
-                        <th data-field="Scopeexe">Execution (SCOPE.EXE)</th>
-                        <th data-field="WorkingDir">WorkingDir</th>
-                        <th data-field="Exception">Exception:</th>
-                        <th data-field="Script">Script:</th>
-                        <th data-field="Stages_0">Stages_0:</th>
-                        <th data-field="Stages_1">Stages_1:</th>
-                        <th data-field="Stages_2">Stages_2:</th>
-                        <th data-field="Stages_3">Stages_3:</th>
-                        <th data-field="Stages_4">Stages_4:</th>
-                        <th data-field="Stages_5">Stages_5:</th>
-                        <th data-field="Stages_6">Stages_6:</th>
-                    </tr>
-                </thead>
-            </table>
+                       data-pagination="true"
+                       data-row-style="rowStyle"
+                       data-sort-name="DateTime"
+                       data-sort-order="desc"
+                       @*data-search-align="left"*@>
+                    <thead>
+                        <tr class="active">
+                            <th data-field="DateTime" data-sortable="true" data-sorter="dateTimeSorter">DateTime</th>
+                            <th data-field="Guid">Job Id</th>
+                            <th data-field="JobType">Job Type</th>
+                            <th data-field="JobSubType">Job SubType</th>
+                            <th data-field="DereferencedRuntime">Dereferenced Runtime</th>
+                            <th data-field="UserName">User Name</th>
+                            @*<th data-field="ClientMachine">Client Machine</th>*@
+                            <th data-field="MachineName">Machine</th>
+                            <th data-field="TargetCosmosCluster">Cosmos Cluster</th>
+                            @*<th data-field="legacyVC">Legacy VC</th>*@
+                            <th data-field="Duration">Duration(s)</th>
+                            <th data-field="ProfileLog" data-align="center">Profile Log</th>
+                            <th data-field="JMDispatcherLog" data-align="center">JM Dispatcher Log</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
 </div>
-
-<style>
-    .panel {
-        min-width: 310px;
-    }
-
-    .col-sm-2 {
-        width: 300px;
-        padding-right: 0px;
-        margin-bottom: 5px;
-    }
-
-    .card-view .title {
-        min-width: 120px !important;
-    }
-
-    .card-view .value {
-        white-space: pre-line; /* Chrome; W3C standard */
-        white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-        white-space: -pre-wrap; /* Opera 4-6 */
-        white-space: -o-pre-wrap; /* Opera 7 */
-        word-wrap: break-word; /* Internet Explorer 5.5+ */
-        display: block;
-        padding-left: 40px;
-        margin-bottom: 10px;
-        border: 1px solid rgb(221, 221, 221);*/
-    }
-
-    .card-view {
-        max-width: 100% !important;
-        line-height: 1.5 !important;
-    }
-
-    .bgcolor {
-        background-color:#f5f5f5;
-    } 
-
-    .dl-horizontal dt{
-        width:100px !important;
-    }
-
-    .dl-horizontal dd{
-        margin-left:110px !important;
-    }
-</style>
-
-@section Scripts
-{
-    @*<script src="~/Content/bootstrap-table/extensions/flatJSON/bootstrap-table-flatJSON.js"></script>*@
-    @*<script src="~/Content/bootstrap-table/extensions/filter/bootstrap-table-filter.min.js"></script>*@
-
-    <script>
-        $(document).ready(function () {
-
-            var jobStateTable = $('#table_jobState');
-            var detailsTable = $('#DetailsTable');
-
-            function FetchJobStates() {
-                var jobId = $.trim($("#jobId").val());
-                var machine = $.trim($("#machineName").val());
-                var runTime = $.trim($("#runTime").val());
-                var environment = $.trim($("#environment").val());
-                machine= machine==""||machine=="*"?"all":machine;
-                jobId= jobId==""||jobId=="*"?"all":jobId;
-                var queryUrl = "/api/phxutils/JobStates/" + environment + "/" + runTime+"/"+machine+"/"+jobId;
-
-                ajaxindicatorstart();
-                jobStateTable.bootstrapTable('showLoading');
-                $.getJSON(queryUrl, function () { })
-                    .done(function (data) {
-                        var jobs = FlatJobStates(data);
-                        jobStateTable.bootstrapTable('load', jobs);
-                    })
-                    .error(function (err) {
-                        alert('Loading data error: ' + err.responseText);
-                        jobStateTable.bootstrapTable('load', []);
-                    })
-                    .always(function () {
-                        jobStateTable.bootstrapTable('hideLoading');
-                        ajaxindicatorstop();
-                    });
-            }
-
-            function FlatJobStates(jobStates) {
-                var flagJobs = [];
-
-                if (jobStates == null) {
-                    return flagJobs;
+    <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Job State Details</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row" style="padding:5px 15px 5px 15px;">
+                        <table id="DetailsTable"
+                               class="bootstrap-table bgcolor small"
+                               data-toggle="table"
+                               data-card-view="true">
+                            <thead>
+                                <tr>
+                                    <th data-field="Guid">Job Id:</th>
+                                    <th data-field="Scopeexe">Execution (SCOPE.EXE)</th>
+                                    <th data-field="WorkingDir">WorkingDir</th>
+                                    <th data-field="Exception">Exception:</th>
+                                    <th data-field="Script">Script:</th>
+                                    <th data-field="Stages_0">Stages_0:</th>
+                                    <th data-field="Stages_1">Stages_1:</th>
+                                    <th data-field="Stages_2">Stages_2:</th>
+                                    <th data-field="Stages_3">Stages_3:</th>
+                                    <th data-field="Stages_4">Stages_4:</th>
+                                    <th data-field="Stages_5">Stages_5:</th>
+                                    <th data-field="Stages_6">Stages_6:</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <style>
+                .panel {
+                    min-width: 310px;
                 }
 
-                $.each(jobStates, function (i, value) {
-                    if (value === null || value.Job === null) {
-                        return;
-                    }
-                    var machineName = value.MachineName;
-                    var jobs = value.Job;
+                .col-sm-2 {
+                    width: 300px;
+                    padding-right: 0px;
+                    margin-bottom: 5px;
+                }
 
-                    $.each(jobs, function (j, jobObj) {
-                        // flag machine name
-                        jobObj.MachineName = machineName;
+                .card-view .title {
+                    min-width: 120px !important;
+                }
 
-                        // flag runtime
-                        var runtime = jobObj.Runtime;
-                        jobObj.Runtime = runtime.Value;
-                        jobObj.DereferencedRuntime = runtime.Dereferenced;
+                .card-view .value {
+                    white-space: pre-line; /* Chrome; W3C standard */
+                    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+                    white-space: -pre-wrap; /* Opera 4-6 */
+                    white-space: -o-pre-wrap; /* Opera 7 */
+                    word-wrap: break-word; /* Internet Explorer 5.5+ */
+                    display: block;
+                    padding-left: 40px;
+                    margin-bottom: 10px;
+                    border: 1px solid rgb(221, 221, 221);
+                    */;
+                }
 
-                        // flag job stages
-                        if (jobObj.Stages != null) {
-                            jobObj.StartTime = jobObj.Stages[0].StartTime;
-                            jobObj.EndTime = jobObj.Stages[jobObj.Stages.length - 1].EndTime;
-                            jobObj.Duration = (Date.parse(jobObj.EndTime) - Date.parse(jobObj.StartTime)) / 1000;
-                            $.each(jobObj.Stages, function (k, stage) {
-                                var stageHtml = '<dl class="dl-horizontal">';
-                                $.each(stage, function (m, prop) {
-                                    prop = prop == null ? "null" : prop.replace(/\</g, '&lt;');  //escape html
-                                    stageHtml += '<dt>' + m + ": </dt>" + "<dd>" + prop + '</dd>';  // format
+                .card-view {
+                    max-width: 100% !important;
+                    line-height: 1.5 !important;
+                }
+
+                .bgcolor {
+                    background-color: #f5f5f5;
+                }
+
+                .dl-horizontal dt {
+                    width: 100px !important;
+                }
+
+                .dl-horizontal dd {
+                    margin-left: 110px !important;
+                }
+            </style>
+
+            @section Scripts
+{
+                @*<script src="~/Content/bootstrap-table/extensions/flatJSON/bootstrap-table-flatJSON.js"></script>*@
+                @*<script src="~/Content/bootstrap-table/extensions/filter/bootstrap-table-filter.min.js"></script>*@
+
+                <script>
+                    $(document).ready(function () {
+
+                        var jobStateTable = $('#table_jobState');
+                        var detailsTable = $('#DetailsTable');
+
+                        function FetchJobStates() {
+                            var jobId = $.trim($("#jobId").val());
+                            var machine = $.trim($("#machineName").val());
+                            var runTime = $.trim($("#runTime").val());
+                            var environment = $.trim($("#environment").val());
+                            machine = machine == "" || machine == "*" ? "all" : machine;
+                            jobId = jobId == "" || jobId == "*" ? "all" : jobId;
+                            var queryUrl = "/api/phxutils/JobStates/" + environment + "/" + runTime + "/" + machine + "/" + jobId;
+
+                            ajaxindicatorstart();
+                            jobStateTable.bootstrapTable('showLoading');
+                            $.getJSON(queryUrl, function () { })
+                                .done(function (data) {
+                                    var jobs = FlatJobStates(data);
+                                    jobStateTable.bootstrapTable('load', jobs);
+                                })
+                                .error(function (err) {
+                                    alert('Loading data error: ' + err.responseText);
+                                    jobStateTable.bootstrapTable('load', []);
+                                })
+                                .always(function () {
+                                    jobStateTable.bootstrapTable('hideLoading');
+                                    ajaxindicatorstop();
                                 });
-                                stageHtml += '</dl>';
-
-                                jobObj['Stages_' + k] = stageHtml; // JSON.stringify(stage);
-                            });
-                            delete jobObj.Stages;
                         }
 
-                        // create profile link
-                        var link = location.protocol + '//' + location.host + '/' + 'tools/jobprofile/' + jobObj.TargetAPCluster + '/' + jobObj.TargetCosmosCluster + '/' + jobObj.Runtime + '/' + jobObj.DereferencedRuntime + '/' + jobObj.Guid;
-                        jobObj.ProfileLog = '<a style="text-decoration: none" class="glyphicon glyphicon-search" href="' + link + '" target="_blank"></a>';
+                        function FlatJobStates(jobStates) {
+                            var flagJobs = [];
 
-                        // create CsLog link
-                        var jmDispatcherLog = location.protocol + '//' + location.host + '/' + 'tools/CsLog/' + jobObj.TargetAPCluster + '/' + jobObj.TargetCosmosCluster + "?startTime='" + jobObj.StartTime + "'&endtime='" + jobObj.EndTime + "'&searchPattern=" + "*JobManagerDispatcher*";
-                        jobObj.JMDispatcherLog = '<a  style="text-decoration: none" class="glyphicon glyphicon-search" href="' + jmDispatcherLog + '" target="_blank"></a>';
+                            if (jobStates == null) {
+                                return flagJobs;
+                            }
 
-                        flagJobs.push(jobObj);
+                            $.each(jobStates, function (i, value) {
+                                if (value === null || value.Job === null) {
+                                    return;
+                                }
+                                var machineName = value.MachineName;
+                                var jobs = value.Job;
+
+                                $.each(jobs, function (j, jobObj) {
+                                    // flag machine name
+                                    jobObj.MachineName = machineName;
+
+                                    // flag runtime
+                                    var runtime = jobObj.Runtime;
+                                    jobObj.Runtime = runtime.Value;
+                                    jobObj.DereferencedRuntime = runtime.Dereferenced;
+
+                                    // flag job stages
+                                    if (jobObj.Stages != null) {
+                                        jobObj.StartTime = jobObj.Stages[0].StartTime;
+                                        jobObj.EndTime = jobObj.Stages[jobObj.Stages.length - 1].EndTime;
+                                        jobObj.Duration = (Date.parse(jobObj.EndTime) - Date.parse(jobObj.StartTime)) / 1000;
+                                        $.each(jobObj.Stages, function (k, stage) {
+                                            var stageHtml = '<dl class="dl-horizontal">';
+                                            $.each(stage, function (m, prop) {
+                                                prop = prop == null ? "null" : prop.replace(/\</g, '&lt;');  //escape html
+                                                stageHtml += '<dt>' + m + ": </dt>" + "<dd>" + prop + '</dd>';  // format
+                                            });
+                                            stageHtml += '</dl>';
+
+                                            jobObj['Stages_' + k] = stageHtml; // JSON.stringify(stage);
+                                        });
+                                        delete jobObj.Stages;
+                                    }
+
+                                    // create profile link
+                                    var link = location.protocol + '//' + location.host + '/' + 'tools/jobprofile/' + jobObj.TargetAPCluster + '/' + jobObj.TargetCosmosCluster + '/' + jobObj.Runtime + '/' + jobObj.DereferencedRuntime + '/' + jobObj.Guid;
+                                    jobObj.ProfileLog = '<a style="text-decoration: none" class="glyphicon glyphicon-search" href="' + link + '" target="_blank"></a>';
+
+                                    // create CsLog link
+                                    var jmDispatcherLog = location.protocol + '//' + location.host + '/' + 'tools/CsLog/' + jobObj.TargetCosmosCluster + "?startTime=" + jobObj.StartTime + "&endtime=" + jobObj.EndTime + "&searchPattern=" + "cosmosErrorLog_JobManagerDispatcher*";
+                                    jobObj.JMDispatcherLog = '<a  style="text-decoration: none" class="glyphicon glyphicon-search" href="' + jmDispatcherLog + '" target="_blank"></a>';
+
+                                    flagJobs.push(jobObj);
+                                });
+                            });
+
+                            return flagJobs;
+                        }
+
+                        $("#btn_Fetch").click(function () {
+                            FetchJobStates();
+                        });
+
+                        var previouslySelected = null;
+                        $('#table_jobState').on('click-row.bs.table', function (e, row, $element) {
+                            var detailsTableData = [];
+                            detailsTableData.push(row);
+                            detailsTable.bootstrapTable('load', detailsTableData);
+
+                            if (previouslySelected != null) {
+                                previouslySelected.removeClass('bgcolor');
+                            }
+                            $element.addClass('bgcolor');
+                            previouslySelected = $element;
+                        });
+
+                        $(".dropdown-menu li a").click(function () {
+                            var targetParent = $(this).parentsUntil(".input-group").last().parent(".input-group");
+                            if (targetParent != null && targetParent.length == 1) {
+                                var target = targetParent.find("input[data-toggle='dropdown']");
+                                if (target != null) {
+                                    target.val($(this).text());
+                                    target.change();
+                                }
+                            }
+                        });
                     });
-                });
 
-                return flagJobs;
-            }
-
-            $("#btn_Fetch").click(function () {
-                FetchJobStates();
-            });
-
-            var previouslySelected = null;
-            $('#table_jobState').on('click-row.bs.table', function (e, row, $element) {
-                var detailsTableData = [];
-                detailsTableData.push(row);
-                detailsTable.bootstrapTable('load', detailsTableData);
-
-                if (previouslySelected != null) {
-                    previouslySelected.removeClass('bgcolor');
-                }
-                $element.addClass('bgcolor');
-                previouslySelected = $element;
-            });
-
-            $(".dropdown-menu li a").click(function () {
-                var targetParent = $(this).parentsUntil(".input-group").last().parent(".input-group");
-                if (targetParent != null && targetParent.length==1) {
-                    var target = targetParent.find("input[data-toggle='dropdown']");
-                    if (target != null) {
-                        target.val($(this).text());
-                        target.change();
+                    function rowStyle(row, index) {
+                        if (row.Exception != null && row.Exception != "") {
+                            return { classes: 'danger' };
+                        }
+                        return {};
                     }
-                }
-            });
-        });
 
-        function rowStyle(row, index){
-            if(row.Exception!=null && row.Exception!=""){
-                return {classes: 'danger'};
+                    function dateTimeSorter(a, b) {
+                        var aDate = new Date(a);
+                        var bDate = new Date(b);
+                        if (aDate > bDate) return 1;
+                        if (aDate < bDate) return -1;
+                        return 0;
+                    }
+                </script>
             }
-            return {};
-        }
-
-        function dateTimeSorter(a, b) {
-            var aDate = new Date(a);
-            var bDate = new Date(b);
-            if (aDate > bDate) return 1;
-            if (aDate < bDate) return -1;
-            return 0;
-        }
-    </script>
-}

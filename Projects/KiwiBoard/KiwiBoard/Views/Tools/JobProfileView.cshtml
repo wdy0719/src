@@ -120,6 +120,7 @@
 
                 // set machine info
                 $('#info').text($('#info').text() + ";      Profile on machine: " + data.ProfileLocation);
+                $('<a href="/tools/JobProfile/@ViewBag.jobId/download" class="glyphicon glyphicon-download-alt" style="float:right" title="Download original profile.">Profile</a>').appendTo($('#info'));
 
                 // show algebra
                 if (data.Algebra != null) {

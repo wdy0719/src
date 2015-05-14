@@ -22,27 +22,4 @@ namespace KiwiBoard.Entities
         public string TS { get; set; }
         public string String1 { get; set; }
     }
-
-    public class CsLogConverter:PSTypeConverter
-    {
-        public override bool CanConvertFrom(object sourceValue, Type destinationType)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool CanConvertTo(object sourceValue, Type destinationType)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object ConvertFrom(object sourceValue, Type destinationType, IFormatProvider formatProvider, bool ignoreCase)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object ConvertTo(object sourceValue, Type destinationType, IFormatProvider formatProvider, bool ignoreCase)
-        {
-            throw new NotImplementedException();
-        }
-    }
 }

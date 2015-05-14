@@ -33,7 +33,7 @@ namespace KiwiBoard.BL
             defaultSessionState.ApartmentState = System.Threading.ApartmentState.MTA;
             defaultSessionState.ThreadOptions = System.Management.Automation.Runspaces.PSThreadOptions.UseNewThread;
             defaultSessionState.ThrowOnRunspaceOpenError = true;
-            defaultSessionState.ImportPSModule(new string[] { Settings.CoreXTAutomationModule, Settings.PhxAutomationModule });
+            defaultSessionState.ImportPSModule(new string[] { Settings.CoreXTAutomationModule, Settings.PhxAutomationModule, Settings.ReadPhxLogs2Location });
 
             this.rsPool = System.Management.Automation.Runspaces.RunspaceFactory.CreateRunspacePool(defaultSessionState);
             this.rsPool.SetMaxRunspaces(20);
@@ -68,14 +68,24 @@ namespace KiwiBoard.BL
             return string.Empty;
         }
 
-        public Entities.CsLog[] FetchCsLogEntries(DateTime startTime, DateTime endTime, string searchPattern, params string[] machines)
+        public IEnumerable<Entities.CsLog> FetchCsLogEntries(DateTime startTime, DateTime endTime, string searchPattern, params string[] machines)
         {
             var CsLogSearchPattern = string.Format("../Cslogs/local/{0}", searchPattern);
-            var commands = string.Format("Read-PhxLogs '{0}' -Start '{1}' -End '{2}' -UpdateCache", CsLogSearchPattern, startTime.ToString(), endTime.ToString());
+            var commands = string.Format("Read-PhxLogs2 '{0}' -Start '{1}' -End '{2}' -UpdateCache", CsLogSearchPattern, startTime.ToString(), endTime.ToString());
 
             var script = string.Format("{0} | {1}", string.Join(",", machines.Select(m => "'" + m + "'")), commands);
 
-            return this.RunScript<Entities.CsLog>(script).ToArray();
+            var csLogProperties = typeof(Entities.CsLog).GetProperties();
+            foreach (var cslog in this.RunScript<dynamic>(script).Where(a => a is IDictionary<String, Object>).Cast<IDictionary<String, Object>>())
+            {
+                var log = new Entities.CsLog();
+                foreach (var prop in csLogProperties)
+                {
+                    prop.SetValue(log, cslog[prop.Name]);
+                }
+
+                yield return log;
+            }
         }
 
         public IEnumerable<dynamic> ReadPhxFileAsCsv(string path, params string[] machines)

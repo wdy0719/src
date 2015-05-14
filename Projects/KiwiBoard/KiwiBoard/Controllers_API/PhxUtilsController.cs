@@ -79,66 +79,15 @@ namespace KiwiBoard.Controllers_API
         }
 
         [HttpGet]
-        [Route("GetProfileTest/{apcluster}/{environment}/{runtime}/{runtimeCodeName}/{jobId:guid}")]
-        public async Task<dynamic> GetProfileTest(bool obj = false)
-        {
-            return await this.handleExceptions(() =>
-            {
-
-                var onMachine = "Test";
-                var profile = File.ReadAllText(@"C:\Users\v-dayow\Desktop\profile.tmp");
-
-                return new { Machine = onMachine, Profile = profile };
-            });
-        }
-
-        [HttpGet]
         [Route("GetProfileProcesses/{apcluster}/{environment}/{runtime}/{runtimeCodeName}/{jobId:guid}")]
         public async Task<dynamic> GetProfileProcesses(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
         {
             return await this.handleExceptions(() =>
             {
-
                 var onMachine = string.Empty;
                 var profile = JobDiagnosticProcessor.Instance.FetchJobProfile(apcluster, environment, runtime, runtimeCodeName, jobId, out onMachine);
                 // var profile = File.ReadAllText(@"C:\Users\v-dayow\Desktop\profile.tmp");
                 var profileJob = JobDiagnosticProcessor.Instance.ParseAnalyzerJobFromProfile(profile);
-
-                //// unflatted obj
-                //var stages = profileJob.Stages.Select(s => new
-                //{
-                //    StageName = s.StageName,
-                //    Vertices = s.Vertices.Select(v => new
-                //    {
-                //        VertexName = v.Key,
-                //        UpVertices = v.Value.UpVertices.Select(upv => upv.VertexName).ToArray(),
-                //        DownVertices = v.Value.DownVertices.Select(dnv => dnv.VertexName).ToArray(),
-                //        Processes = v.Value.Versions.Select(p => new
-                //        {
-                //            Guid = p.Guid,
-                //            Name = p.Name,
-                //            Machine = p.Machine,
-                //            RuntimeStats = p.RuntimeStats,
-                //            ProcessStartTime = p.ProcessStartTime,
-                //            ProcessCompleteTime = p.ProcessCompleteTime,
-                //            ExitStatus = p.ExitStatus,
-                //            CommentOnVertexLatencies = p.CommentOnVertexLatencies,
-                //            CreationReason = p.CreationReason,
-                //            CreatorVertexName = p.CreatorVertexName,
-                //            TotalDataRead = p.TotalDataRead,
-                //            TotalDataWritten = p.TotalDataWritten
-                //        }).ToArray()
-                //    }).ToArray(),
-                //});
-
-                //return new
-                //{
-                //    Summary = profileJob.JobTimingStats,
-                //    IsComplete = profileJob.IsComplete,
-                //    Algebra = profileJob.Algebra,
-                //    Stages = stages.ToArray(),
-                //    CriticalPath = profileJob.CriticalPath().Select(cp => cp.Guid).ToArray()
-                //};
 
                 var criticalPath = profileJob.CriticalPath().Select(p=>p.Guid);
                 var processes = profileJob.Processes.Select(p => new
@@ -177,24 +126,41 @@ namespace KiwiBoard.Controllers_API
         }
 
         [HttpGet]
-        [Route("GetJmDispatcherLog/{apcluster}/{environment}/{startTime}/{endTime}")]
-        public async Task<IEnumerable<Entities.CsLog>> GetJmDispatcherLog(string apcluster, string environment, DateTime startTime, DateTime endTime)
+        [Route("CsLog/{environment}/Category")]
+        public async Task<IEnumerable<dynamic>> GetCsLogCategory(string environment)
         {
-            return await this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(apcluster, environment, startTime, endTime));
+            return await this.handleExceptions(() =>
+            {
+                var logFiles = JobDiagnosticProcessor.Instance.BrowserDirectory(environment, "data/Cslogs/local/*.log").ToArray();
+                if (logFiles == null)
+                    return null;
+                return logFiles.OrderBy(f => f.filename).Select(f => Regex.Replace(f.filename, @"_\d+.log", "_*")).Distinct();
+            });
         }
 
+        /// <summary>
+        /// FE: searchPattern = "cosmosErrorLog_JobManagerDispatcher.exe*"
+        /// </summary>
         [HttpGet]
-        public async Task<IEnumerable<Entities.CsLog>> GetJmDispatcherLog(string apcluster, string environment, int last = 0)
+        [Route("CsLog/{environment}/Logs")]
+        public async Task<IEnumerable<Entities.CsLog>> GetCsLog(string environment, string machine, string startTime, string endTime, string searchPattern)
         {
-            var now = DateTime.Now;
-            return await this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchJmDispatcherLog(apcluster, environment, now.AddMinutes(last * -1), now));
-        }
+            return await this.handleExceptions(() =>
+                {
+                    if (string.IsNullOrEmpty(environment) && string.IsNullOrEmpty(machine))
+                    {
+                        throw new ArgumentException("Environment or machine name not specified!");
+                    }
 
-        [HttpGet]
-        [Route("GetCsLog/{apcluster}/{cosmosCluster}")]
-        public async Task<IEnumerable<Entities.CsLog>> GetCsLog(string apCluster, string cosmosCluster, string startTime, string endTime, string searchPattern)
-        {
-            return await this.handleExceptions(() => JobDiagnosticProcessor.Instance.FetchCsLogs(apCluster, cosmosCluster, DateTime.Parse(startTime.Trim('\'')), DateTime.Parse(endTime.Trim('\'')), searchPattern.Trim('\'')));
+                    DateTime start = DateTime.MinValue, end = DateTime.MinValue;
+                    if (string.IsNullOrEmpty(searchPattern) || !DateTime.TryParse(startTime, out start) || !DateTime.TryParse(endTime, out end) || end <= start)
+                    {
+                        throw new ArgumentException("Wrong query parameters!");
+                    }
+
+                    var jmMachines = string.IsNullOrEmpty(machine) || machine == "*" ? Settings.CsLogEnvironmentMachineMapping.First(kv => kv.Key.Equals(environment, StringComparison.InvariantCultureIgnoreCase)).Value : new string[] { machine };
+                    return JobDiagnosticProcessor.Instance.SearchCsLogs(jmMachines, start.AddSeconds(-1), end.AddSeconds(1), searchPattern.Trim('\''));
+                });
         }
 
         private async Task<T> handleExceptions<T>(Func<T> action)
@@ -205,11 +171,11 @@ namespace KiwiBoard.Controllers_API
                 {
                     return action();
                 }
-                catch (ArgumentException)
+                catch (ArgumentException ex)
                 {
-                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Wrong query parameters! Runtime name and job Id cannot be null." });
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = ex.Message });
                 }
-                catch (JobNotFoundException ex)
+                catch (NotFoundException ex)
                 {
                     throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ex.Message });
                 }

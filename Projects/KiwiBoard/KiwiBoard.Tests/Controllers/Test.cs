@@ -70,7 +70,7 @@ namespace KiwiBoard.Tests.Controllers
         //[TestMethod]
         public void FetchJmDispatcherLog()
         {
-            var test = JobDiagnosticProcessor.Instance.FetchJmDispatcherLog("bn2", "kobo04-test-bn2", DateTime.Parse("04/13/2015 15:40:00"), DateTime.Parse("04/13/2015 15:45:00"));
+            var test = JobDiagnosticProcessor.Instance.SearchCsLogs("kobo04-test-bn2", DateTime.Parse("04/13/2015 15:40:00"), DateTime.Parse("04/13/2015 15:45:00"));
 
             Assert.IsNotNull(test);
         }

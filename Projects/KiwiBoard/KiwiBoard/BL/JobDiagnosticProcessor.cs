@@ -28,11 +28,7 @@ namespace KiwiBoard.BL
         public JobDiagnosticProcessor()
         {
             this.EnvironmentMachineMap = Settings.EnvironmentMachineMapping;
-            this.jobStateCache = MemoryCache.Default;
-
         }
-
-        private ObjectCache jobStateCache;
 
         public IDictionary<string, string[]> EnvironmentMachineMap { get; set; }
 
@@ -40,7 +36,7 @@ namespace KiwiBoard.BL
         {
             if (string.IsNullOrEmpty(environment))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Wrong query parameters!");
             }
 
             var machines = this.EnvironmentMachineMap.First(e => e.Key.Equals(environment, StringComparison.InvariantCultureIgnoreCase)).Value;
@@ -57,39 +53,6 @@ namespace KiwiBoard.BL
             return new Entities.JobStates() { Environment = environment, Jobs = jobXmls };
         }
 
-        public  Entities.Job FetchJobStateByIdFromEnvrionment(string environment, string runtime, string jobId)
-        {
-            if (string.IsNullOrEmpty(environment) || string.IsNullOrEmpty(runtime) || string.IsNullOrEmpty(jobId))
-            {
-                throw new ArgumentNullException();
-            }
-
-            var cacheName = string.Join("_", environment, runtime);
-
-            Entities.Job result = this.FetchJobStateFromCache(cacheName, jobId);
-
-            if (result == null)
-            {
-                this.FetchJobStatesFromEnvrionment(environment, runtime);
-
-                result = this.FetchJobStateFromCache(cacheName, jobId);
-            }
-
-            return result;
-        }
-
-        public string FetchJobProfile(Entities.Job jobState)
-        {
-            if (jobState == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            string machine = string.Empty;
-
-            return this.FetchJobProfile(jobState.TargetAPCluster, jobState.TargetCosmosCluster, jobState.Runtime.Value, jobState.Runtime.Dereferenced, jobState.Guid, out machine);
-        }
-
         public string FetchJobProfile(string apCluster, string cosmosCluster, string runtime, string runtimeCodeName, string jobId, out string machineName)
         {
             if (string.IsNullOrEmpty(apCluster) || string.IsNullOrEmpty(cosmosCluster) || string.IsNullOrEmpty(runtime) || string.IsNullOrEmpty(runtimeCodeName) || string.IsNullOrEmpty(jobId))
@@ -100,7 +63,19 @@ namespace KiwiBoard.BL
             machineName = string.Empty;
             var jmMachines = Utils.GetFunctionMachines(apCluster, cosmosCluster, "JM");
 
-            return PhxAutomation.DefaultInstance.SearchProfileLog(cosmosCluster, runtime, runtimeCodeName, jobId, out machineName, jmMachines);
+            var profile = FileCache.Default.TryGetProfile(jobId, out machineName);
+            if (profile == null)
+            {
+                profile = PhxAutomation.DefaultInstance.SearchProfileLog(cosmosCluster, runtime, runtimeCodeName, jobId, out machineName, jmMachines);
+                FileCache.Default.SetProfile(profile, jobId, machineName);
+            }
+
+            if (string.IsNullOrEmpty(profile))
+            {
+                throw new NotFoundException("Profile not found!");
+            }
+
+            return profile;
         }
 
         public JobAnalyzer.Job ParseAnalyzerJobFromProfile(string profile)
@@ -127,20 +102,38 @@ namespace KiwiBoard.BL
             return string.Join(Environment.NewLine, PhxAutomation.DefaultInstance.RunScript<string>(script).ToArray());
         }
 
-        public IEnumerable<Entities.CsLog> FetchCsLogs(string apCluster, string cosmosCluster, DateTime startTime, DateTime endTime, string searchPattern = "*")
+        public IEnumerable<Entities.CsLog> SearchCsLogs(string environment, DateTime startTime, DateTime endTime, string searchPattern = "*")
         {
-            if (string.IsNullOrEmpty(apCluster) || string.IsNullOrEmpty(cosmosCluster) || startTime == null || endTime == null || endTime <= startTime)
+            if (string.IsNullOrEmpty(environment) || startTime == null || endTime == null || endTime <= startTime)
+            {
+                throw new ArgumentException("Wrong search parameters!");
+            }
+
+            //var jmMachines = Utils.GetFunctionMachines(apCluster, cosmosCluster, "JM");
+            var jmMachines = Settings.CsLogEnvironmentMachineMapping.First(kv => kv.Key.Equals(environment, StringComparison.InvariantCultureIgnoreCase)).Value;
+            return this.SearchCsLogs(jmMachines, startTime, endTime, searchPattern);
+        }
+
+        public IEnumerable<Entities.CsLog> SearchCsLogs(string[] machines, DateTime startTime, DateTime endTime, string searchPattern = "*")
+        {
+            if (machines == null || machines.Length == 0 || startTime == null || endTime == null || endTime <= startTime)
+            {
+                throw new ArgumentException("Wrong search parameters!");
+            }
+
+            return PhxAutomation.DefaultInstance.FetchCsLogEntries(startTime, endTime, searchPattern, machines);
+        }
+
+        public IEnumerable<dynamic> BrowserDirectory(string environment, string path, string machineFunction = "JM")
+        {
+            if (string.IsNullOrEmpty(environment) || string.IsNullOrEmpty(path) || string.IsNullOrEmpty(machineFunction))
             {
                 throw new ArgumentException();
             }
 
-            var jmMachines = Utils.GetFunctionMachines(apCluster, cosmosCluster, "JM");
-            return PhxAutomation.DefaultInstance.FetchCsLogEntries(startTime, endTime, searchPattern, jmMachines);
-        }
-
-        public IEnumerable<Entities.CsLog> FetchJmDispatcherLog(string apCluster, string cosmosCluster, DateTime startTime, DateTime endTime)
-        {
-            return this.FetchCsLogs(apCluster, cosmosCluster, startTime, endTime, "cosmosErrorLog_JobManagerDispatcher.exe*");
+            //var jmMachines = Utils.GetFunctionMachines(apCluster, cosmosCluster, machineFunction);
+            var jmMachines = Settings.CsLogEnvironmentMachineMapping.First(kv => kv.Key.Equals(environment, StringComparison.InvariantCultureIgnoreCase)).Value;
+            return PhxAutomation.DefaultInstance.ReadPhxFileAsCsv(path, jmMachines);
         }
 
         #region Private methods
@@ -152,7 +145,7 @@ namespace KiwiBoard.BL
                 return result;
             }
 
-            var cachedJobs = this.jobStateCache[cacheName] as Entities.JobStates;
+            var cachedJobs = MemoryCache.Default[cacheName] as Entities.JobStates;
             if (cachedJobs != null)
             {
                 foreach (var jobs in cachedJobs.Jobs)
@@ -215,11 +208,11 @@ namespace KiwiBoard.BL
         #endregion
     }
 
-    public class JobNotFoundException : Exception
+    public class NotFoundException : Exception
     {
 
-        public JobNotFoundException() : base() { }
-        public JobNotFoundException(string message, params string[] parameters)
+        public NotFoundException() : base() { }
+        public NotFoundException(string message, params string[] parameters)
             : base(message) { }
     }
 }

@@ -1,12 +1,6 @@
-﻿@{
+﻿@model KiwiBoard.Models.Tools.CsLogViewModel
 
-    //[Route("JobProfile/{apCluster}/{environment}/{runtime}/{dereferencedRuntime}/{jobId}")]
-    ViewBag.apcluster = ViewContext.RouteData.Values["apcluster"];
-    ViewBag.environment = ViewContext.RouteData.Values["environment"];
-    ViewBag.startTime = Request.Params["startTime"];
-    ViewBag.endTime = Request.Params["endTime"];
-    ViewBag.searchPattern = Request.Params["searchPattern"]; //"cosmosErrorLog_JobManagerDispatcher.exe*"; // JM Dispatch search pattern
-    ViewBag.QueryUrl = Url.Content(string.Format("~/api/PhxUtils/GetCsLog/{0}/{1}?startTime='{2}'&endTime='{3}'&searchPattern='{4}'", ViewBag.apcluster, ViewBag.environment, ViewBag.startTime, ViewBag.endTime, ViewBag.searchPattern));
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     ViewBag.Title = "CsLog";
@@ -14,29 +8,109 @@
 
 <div class="panel panel-default">
     <div class="panel-heading">
-        <h3 class="panel-title">CsLog<small><i>&nbsp;&nbsp; - Environment: @ViewBag.environment</i></small></></h3>
+        <h3 class="panel-title">CsLog<small><i>&nbsp;&nbsp; - Search CsLogs</i></small></></h3>
     </div>
     <div class="panel-body">
+        <div class="row">
 
-        <div class="row" style="padding:5px 15px 5px 15px;">
-            <table id="csLogsTable"
-                   class="bootstrap-table small"
-                   data-search="true"
-                   data-pagination="true"
-                   data-show-columns="true"
-                   data-url="@ViewBag.QueryUrl"
-                   data-toggle="table">
-                <thead>
-                    <tr class="active">
-                        @foreach (var prop in typeof(KiwiBoard.Entities.CsLog).GetProperties())
+            <div class="col-sm-2" style="min-width:280px">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Environment:</span>
+                    <select id="environment" name="Environment" class="form-control" onchange="window.location.href = '/Tools/cslog/' + this.value">
+                        @foreach (var env in Model.GetEnvrionments())
                         {
-                            <th data-field="@prop.Name" data-sortable="true">@prop.Name</th>
+                            var selected = Model.Environment.Equals(env,StringComparison.InvariantCultureIgnoreCase) ? "selected" : "";
+                            <option @selected>@env</option>
                         }
-                    </tr>
-                </thead>
-            </table>
+                    </select>
+                </div>
+            </div>
+            <form action="~/Tools/CsLog/@Model.Environment" method="get">
+
+                <div class="col-sm-2" style="min-width:240px">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">(JM) Machine(s):</span>
+                        @*<input id="mf" type="text" class="form-control" placeholder="" value="JM" style="width:40px !important" readonly />*@
+                        <input id="machine" name="Machine" type="text" class="form-control" placeholder="* to search all machines" data-toggle="dropdown" value="@Model.Machine">
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#" onclick="setValue('#machine', this.innerText)"><small>*</small></a></li>
+                            @foreach (var machine in Model.GetMachines())
+                            {
+                                <li><a href="#" onclick="setValue('#machine', this.innerText)"><small>@machine</small></a></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+    
+                    <div class="col-sm-2" style="min-width:260px">
+            <div class="input-group input-group-sm">
+                <span class="input-group-addon">StartTime:</span>
+                <input id="startTime" name="StartTime" class="form-control" placeholder="e.g: 5/12/2015 1:06:49 PM" value="@Model.StartTime" />
+            </div>
         </div>
+
+        <div class="col-sm-2" style="min-width:260px">
+            <div class="input-group input-group-sm">
+                <span class="input-group-addon">EndTime:</span>
+                <input id="endTime" name="EndTime" class="form-control" placeholder="e.g: 5/12/2015 1:06:49 PM" value="@Model.EndTime" />
+            </div>
+        </div>
+
+        <div class="col-sm-3" style="min-width:350px">
+            <div class="input-group input-group-sm">
+                <span class="input-group-addon">Search Pattern:</span>
+                <input id="SearchPattern" name="SearchPattern" type="text" class="form-control" placeholder="eg: CosmosErrorLog*" data-toggle="dropdown" value="@Model.SearchPattern">
+                <ul class="dropdown-menu" role="menu">
+                    @foreach (var module in Model.GetLogModules())
+                    {
+                        <li><a href="#" onclick="setValue('#SearchPattern',this.innerText)"><small>@module</small></a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class=" col-sm-2">
+            <div class="input-group input-group-sm">
+                <button class="btn btn-primary btn-sm" type="submit" id="btn_Fetch">Search</button>
+            </div>
+        </div>
+        </form>
     </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <table id="csLogsTable"
+                       class="bootstrap-table small"
+                       data-search="true"
+                       data-pagination="true"
+                       data-show-columns="true"
+                       data-url="@Model.SearchUrl"
+                       data-sort-name="Time"
+                       data-toggle="table">
+                    <thead>
+                        <tr class="active">
+                            @*@foreach (var prop in typeof(KiwiBoard.Entities.CsLog).GetProperties())
+                    {
+                        <th data-field="@prop.Name" data-sortable="true">@prop.Name</th>
+                    }*@
+                            <th data-formatter="levelFormatter" data-sortable="true">Level</th>
+                            <th data-field="Time" data-sortable="true">Time</th>
+                            <th data-field="Info" data-sortable="false">Description</th>
+                            <th data-field="Component" data-sortable="false">Component</th>
+                            <th data-sortable="false" data-formatter="srcFileFormatter">Source</th>
+                            <th data-field="SrcFunc" data-sortable="false">Function</th>
+                            @*<th data-field="SrcLine" data-sortable="false">Line</th>*@
+                            <th data-field="PSComputerName" data-sortable="false">Log Machine</th>
+                            <th data-field="Pid" data-sortable="false">Pid</th>
+                            <th data-field="Tid" data-sortable="false">Tid</th>
+                            <th data-field="TS" data-sortable="false" data-visible="false">TS</th>
+                            <th data-field="String1" data-sortable="false" data-visible="false">String1</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+</div>
 </div>
 
 <style>
@@ -51,5 +125,65 @@
 
 @section Scripts
 {
+    <script>
+        $(document).ready(function () {
+            var searchUrl = '@Model.SearchUrl';
 
+            if (searchUrl != '') {
+                ajaxindicatorstart();
+            }
+         
+            $('#csLogsTable')
+                .on('load-success.bs.table', function (e, name, args) {
+                    ajaxindicatorstop();
+                })
+                .on('load-error.bs.table', function (e, name, args) {
+                    var errorMsg = "Unknown";
+                    if (name == 400) {
+                        errorMsg = "Bad Request. Please check query parameters!"
+                    }
+                    alert('Search data got error： ' + errorMsg);
+                    ajaxindicatorstop();
+                });
+        });
+
+        function srcFileFormatter(value, row, index) {
+            var line=0;
+            if(row.SrcLine!=null &&row.SrcLine!=""){
+                line=row.SrcLine;
+            }
+            return row.SrcFile + ' (' + line + ')';
+        }
+
+        function levelFormatter(value, row, index) {
+            var level = row.Level;
+            switch (row.Level) {
+                case 'e': level = 'error'; break;
+                case 'i': level = 'info'; break;
+                case 's': level = 'status'; break;
+                case 'w': level = 'warning'; break;
+                case 'd': level = 'debug'; break;
+                default: break;
+            }
+            return level;
+        }
+
+        function ajaxindicatorstart() {
+            $('body').css('cursor', 'wait');
+            $("input").prop('disabled', true);
+            $("button").prop('disabled', true);
+            $("select").prop('disabled', true);
+        }
+
+        function ajaxindicatorstop() {
+            $("input").prop('disabled', false);
+            $("button").prop('disabled', false);
+            $("select").prop('disabled', false);
+            $('body').css('cursor', 'auto');
+        }
+
+        function setValue(selector, value) {
+            $(selector).val(value);
+        }
+    </script>
 }

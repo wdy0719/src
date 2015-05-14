@@ -158,6 +158,7 @@
       <Private>True</Private>
       <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">
@@ -165,6 +166,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BL\FileCache.cs" />
     <Compile Include="BL\Settings.cs" />
     <Compile Include="BL\DataProvider.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -178,8 +180,6 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ToolsController.cs" />
     <Compile Include="Controllers_API\DefaultController.cs" />
-    <Compile Include="Controllers_API\KiwiTestJobController.cs" />
-    <Compile Include="Controllers_API\KiwiTestResultController.cs" />
     <Compile Include="Controllers_API\PhxUtilsController.cs" />
     <Compile Include="Entities\CsLog.cs" />
     <Compile Include="Entities\JobStates.cs" />
@@ -440,6 +440,7 @@
     <Content Include="Views\Tools\JobProfileView.cshtml" />
     <Content Include="Views\Tools\Test.cshtml" />
     <Content Include="Views\Shared\GridView.cshtml" />
+    <Content Include="Scripts\PS\Read-phxLogs2.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\" />
