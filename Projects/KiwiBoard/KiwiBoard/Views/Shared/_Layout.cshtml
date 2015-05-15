@@ -80,11 +80,13 @@
             $('body').css('cursor', 'wait');
             $("input").prop('disabled', true);
             $("button").prop('disabled', true);
+            $("select").prop('disabled', true);
         }
 
         function ajaxindicatorstop() {
             $("input").prop('disabled', false);
             $("button").prop('disabled', false);
+            $("select").prop('disabled', false);
             $('body').css('cursor', 'auto');
         }
     </script>
