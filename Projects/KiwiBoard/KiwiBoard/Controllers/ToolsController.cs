@@ -72,12 +72,5 @@ namespace KiwiBoard.Controllers
                 }
             }
         }
-
-        [HttpGet]
-        [Route("test")]
-        public ActionResult Test()
-        {
-            return View();
-        }
     }
 }

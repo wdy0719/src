@@ -17,7 +17,7 @@
                         <ul class="dropdown-menu" role="menu" id="environmentMenu">
                             @foreach (var environment in @KiwiBoard.BL.Settings.Environments)
                             {
-                                <li><a href="~/Tools/JobState/@environment"><small>@environment</small></a></li>
+                            <li><a href="~/Tools/JobState/@environment"><small>@environment</small></a></li>
                             }
                         </ul>
                     </div>
@@ -32,7 +32,7 @@
                     <ul class="dropdown-menu" role="menu" id="runtimeMenu">
                         @foreach (var runtime in @KiwiBoard.BL.Settings.Runtimes)
                         {
-                            <li><a href="#"><small>@runtime</small></a></li>
+                        <li><a href="#"><small>@runtime</small></a></li>
                         }
                     </ul>
                 </div>
@@ -45,7 +45,7 @@
                     <ul class="dropdown-menu" role="menu" id="machineMenu">
                         @foreach (var machine in Model.Machines)
                         {
-                            <li><a href="#"><small>@machine</small></a></li>
+                        <li><a href="#"><small>@machine</small></a></li>
                         }
                     </ul>
                 </div>
@@ -101,217 +101,218 @@
         </div>
     </div>
 </div>
-    <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Job State Details</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="row" style="padding:5px 15px 5px 15px;">
-                        <table id="DetailsTable"
-                               class="bootstrap-table bgcolor small"
-                               data-toggle="table"
-                               data-card-view="true">
-                            <thead>
-                                <tr>
-                                    <th data-field="Guid">Job Id:</th>
-                                    <th data-field="Scopeexe">Execution (SCOPE.EXE)</th>
-                                    <th data-field="WorkingDir">WorkingDir</th>
-                                    <th data-field="Exception">Exception:</th>
-                                    <th data-field="Script">Script:</th>
-                                    <th data-field="Stages_0">Stages_0:</th>
-                                    <th data-field="Stages_1">Stages_1:</th>
-                                    <th data-field="Stages_2">Stages_2:</th>
-                                    <th data-field="Stages_3">Stages_3:</th>
-                                    <th data-field="Stages_4">Stages_4:</th>
-                                    <th data-field="Stages_5">Stages_5:</th>
-                                    <th data-field="Stages_6">Stages_6:</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <style>
-                .panel {
-                    min-width: 310px;
-                }
 
-                .col-sm-2 {
-                    width: 300px;
-                    padding-right: 0px;
-                    margin-bottom: 5px;
-                }
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Job State Details</h3>
+    </div>
+    <div class="panel-body">
+        <div class="row" style="padding:5px 15px 5px 15px;">
+            <table id="DetailsTable"
+                   class="bootstrap-table bgcolor small"
+                   data-toggle="table"
+                   data-card-view="true">
+                <thead>
+                    <tr>
+                        <th data-field="Guid">Job Id:</th>
+                        <th data-field="Scopeexe">Execution (SCOPE.EXE)</th>
+                        <th data-field="WorkingDir">WorkingDir</th>
+                        <th data-field="Exception">Exception:</th>
+                        <th data-field="Script">Script:</th>
+                        <th data-field="Stages_0">Stages_0:</th>
+                        <th data-field="Stages_1">Stages_1:</th>
+                        <th data-field="Stages_2">Stages_2:</th>
+                        <th data-field="Stages_3">Stages_3:</th>
+                        <th data-field="Stages_4">Stages_4:</th>
+                        <th data-field="Stages_5">Stages_5:</th>
+                        <th data-field="Stages_6">Stages_6:</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
 
-                .card-view .title {
-                    min-width: 120px !important;
-                }
+<style>
+    .panel {
+        min-width: 310px;
+    }
 
-                .card-view .value {
-                    white-space: pre-line; /* Chrome; W3C standard */
-                    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-                    white-space: -pre-wrap; /* Opera 4-6 */
-                    white-space: -o-pre-wrap; /* Opera 7 */
-                    word-wrap: break-word; /* Internet Explorer 5.5+ */
-                    display: block;
-                    padding-left: 40px;
-                    margin-bottom: 10px;
-                    border: 1px solid rgb(221, 221, 221);
-                    */;
-                }
+    .col-sm-2 {
+        width: 300px;
+        padding-right: 0px;
+        margin-bottom: 5px;
+    }
 
-                .card-view {
-                    max-width: 100% !important;
-                    line-height: 1.5 !important;
-                }
+    .card-view .title {
+        min-width: 120px !important;
+    }
 
-                .bgcolor {
-                    background-color: #f5f5f5;
-                }
+    .card-view .value {
+        white-space: pre-line; /* Chrome; W3C standard */
+        white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+        white-space: -pre-wrap; /* Opera 4-6 */
+        white-space: -o-pre-wrap; /* Opera 7 */
+        word-wrap: break-word; /* Internet Explorer 5.5+ */
+        display: block;
+        padding-left: 40px;
+        margin-bottom: 10px;
+        border: 1px solid rgb(221, 221, 221);
+    }
 
-                .dl-horizontal dt {
-                    width: 100px !important;
-                }
+    .card-view {
+        max-width: 100% !important;
+        line-height: 1.5 !important;
+    }
 
-                .dl-horizontal dd {
-                    margin-left: 110px !important;
-                }
-            </style>
+    .bgcolor {
+        background-color: #f5f5f5;
+    }
 
-            @section Scripts
+    .dl-horizontal dt {
+        width: 100px !important;
+    }
+
+    .dl-horizontal dd {
+        margin-left: 110px !important;
+    }
+</style>
+
+@section Scripts
 {
-                @*<script src="~/Content/bootstrap-table/extensions/flatJSON/bootstrap-table-flatJSON.js"></script>*@
-                @*<script src="~/Content/bootstrap-table/extensions/filter/bootstrap-table-filter.min.js"></script>*@
+    @*<script src="~/Content/bootstrap-table/extensions/flatJSON/bootstrap-table-flatJSON.js"></script>*@
+    @*<script src="~/Content/bootstrap-table/extensions/filter/bootstrap-table-filter.min.js"></script>*@
 
-                <script>
-                    $(document).ready(function () {
+    <script>
+        $(document).ready(function () {
 
-                        var jobStateTable = $('#table_jobState');
-                        var detailsTable = $('#DetailsTable');
+            var jobStateTable = $('#table_jobState');
+            var detailsTable = $('#DetailsTable');
 
-                        function FetchJobStates() {
-                            var jobId = $.trim($("#jobId").val());
-                            var machine = $.trim($("#machineName").val());
-                            var runTime = $.trim($("#runTime").val());
-                            var environment = $.trim($("#environment").val());
-                            machine = machine == "" || machine == "*" ? "all" : machine;
-                            jobId = jobId == "" || jobId == "*" ? "all" : jobId;
-                            var queryUrl = "/api/phxutils/JobStates/" + environment + "/" + runTime + "/" + machine + "/" + jobId;
+            function FetchJobStates() {
+                var jobId = $.trim($("#jobId").val());
+                var machine = $.trim($("#machineName").val());
+                var runTime = $.trim($("#runTime").val());
+                var environment = $.trim($("#environment").val());
+                machine = machine == "" || machine == "*" ? "all" : machine;
+                jobId = jobId == "" || jobId == "*" ? "all" : jobId;
+                var queryUrl = "/api/phxutils/JobStates/" + environment + "/" + runTime + "/" + machine + "/" + jobId;
 
-                            ajaxindicatorstart();
-                            jobStateTable.bootstrapTable('showLoading');
-                            $.getJSON(queryUrl, function () { })
-                                .done(function (data) {
-                                    var jobs = FlatJobStates(data);
-                                    jobStateTable.bootstrapTable('load', jobs);
-                                })
-                                .error(function (err) {
-                                    alert('Loading data error: ' + err.responseText);
-                                    jobStateTable.bootstrapTable('load', []);
-                                })
-                                .always(function () {
-                                    jobStateTable.bootstrapTable('hideLoading');
-                                    ajaxindicatorstop();
-                                });
-                        }
-
-                        function FlatJobStates(jobStates) {
-                            var flagJobs = [];
-
-                            if (jobStates == null) {
-                                return flagJobs;
-                            }
-
-                            $.each(jobStates, function (i, value) {
-                                if (value === null || value.Job === null) {
-                                    return;
-                                }
-                                var machineName = value.MachineName;
-                                var jobs = value.Job;
-
-                                $.each(jobs, function (j, jobObj) {
-                                    // flag machine name
-                                    jobObj.MachineName = machineName;
-
-                                    // flag runtime
-                                    var runtime = jobObj.Runtime;
-                                    jobObj.Runtime = runtime.Value;
-                                    jobObj.DereferencedRuntime = runtime.Dereferenced;
-
-                                    // flag job stages
-                                    if (jobObj.Stages != null) {
-                                        jobObj.StartTime = jobObj.Stages[0].StartTime;
-                                        jobObj.EndTime = jobObj.Stages[jobObj.Stages.length - 1].EndTime;
-                                        jobObj.Duration = (Date.parse(jobObj.EndTime) - Date.parse(jobObj.StartTime)) / 1000;
-                                        $.each(jobObj.Stages, function (k, stage) {
-                                            var stageHtml = '<dl class="dl-horizontal">';
-                                            $.each(stage, function (m, prop) {
-                                                prop = prop == null ? "null" : prop.replace(/\</g, '&lt;');  //escape html
-                                                stageHtml += '<dt>' + m + ": </dt>" + "<dd>" + prop + '</dd>';  // format
-                                            });
-                                            stageHtml += '</dl>';
-
-                                            jobObj['Stages_' + k] = stageHtml; // JSON.stringify(stage);
-                                        });
-                                        delete jobObj.Stages;
-                                    }
-
-                                    // create profile link
-                                    var link = location.protocol + '//' + location.host + '/' + 'tools/jobprofile/' + jobObj.TargetAPCluster + '/' + jobObj.TargetCosmosCluster + '/' + jobObj.Runtime + '/' + jobObj.DereferencedRuntime + '/' + jobObj.Guid;
-                                    jobObj.ProfileLog = '<a style="text-decoration: none" class="glyphicon glyphicon-search" href="' + link + '" target="_blank"></a>';
-
-                                    // create CsLog link
-                                    var jmDispatcherLog = location.protocol + '//' + location.host + '/' + 'tools/CsLog/' + jobObj.TargetCosmosCluster + "?startTime=" + jobObj.StartTime + "&endtime=" + jobObj.EndTime + "&searchPattern=" + "cosmosErrorLog_JobManagerDispatcher*";
-                                    jobObj.JMDispatcherLog = '<a  style="text-decoration: none" class="glyphicon glyphicon-search" href="' + jmDispatcherLog + '" target="_blank"></a>';
-
-                                    flagJobs.push(jobObj);
-                                });
-                            });
-
-                            return flagJobs;
-                        }
-
-                        $("#btn_Fetch").click(function () {
-                            FetchJobStates();
-                        });
-
-                        var previouslySelected = null;
-                        $('#table_jobState').on('click-row.bs.table', function (e, row, $element) {
-                            var detailsTableData = [];
-                            detailsTableData.push(row);
-                            detailsTable.bootstrapTable('load', detailsTableData);
-
-                            if (previouslySelected != null) {
-                                previouslySelected.removeClass('bgcolor');
-                            }
-                            $element.addClass('bgcolor');
-                            previouslySelected = $element;
-                        });
-
-                        $(".dropdown-menu li a").click(function () {
-                            var targetParent = $(this).parentsUntil(".input-group").last().parent(".input-group");
-                            if (targetParent != null && targetParent.length == 1) {
-                                var target = targetParent.find("input[data-toggle='dropdown']");
-                                if (target != null) {
-                                    target.val($(this).text());
-                                    target.change();
-                                }
-                            }
-                        });
+                ajaxindicatorstart();
+                jobStateTable.bootstrapTable('showLoading');
+                $.getJSON(queryUrl, function () { })
+                    .done(function (data) {
+                        var jobs = FlatJobStates(data);
+                        jobStateTable.bootstrapTable('load', jobs);
+                    })
+                    .error(function (err) {
+                        alert('Load data error: (' + err.status + ") " + err.statusText + '\n' + err.responseText);
+                        jobStateTable.bootstrapTable('load', []);
+                    })
+                    .always(function () {
+                        jobStateTable.bootstrapTable('hideLoading');
+                        ajaxindicatorstop();
                     });
-
-                    function rowStyle(row, index) {
-                        if (row.Exception != null && row.Exception != "") {
-                            return { classes: 'danger' };
-                        }
-                        return {};
-                    }
-
-                    function dateTimeSorter(a, b) {
-                        var aDate = new Date(a);
-                        var bDate = new Date(b);
-                        if (aDate > bDate) return 1;
-                        if (aDate < bDate) return -1;
-                        return 0;
-                    }
-                </script>
             }
+
+            function FlatJobStates(jobStates) {
+                var flagJobs = [];
+
+                if (jobStates == null) {
+                    return flagJobs;
+                }
+
+                $.each(jobStates, function (i, value) {
+                    if (value === null || value.Job === null) {
+                        return;
+                    }
+                    var machineName = value.MachineName;
+                    var jobs = value.Job;
+
+                    $.each(jobs, function (j, jobObj) {
+                        // flag machine name
+                        jobObj.MachineName = machineName;
+
+                        // flag runtime
+                        var runtime = jobObj.Runtime;
+                        jobObj.Runtime = runtime.Value;
+                        jobObj.DereferencedRuntime = runtime.Dereferenced;
+
+                        // flag job stages
+                        if (jobObj.Stages != null) {
+                            jobObj.StartTime = jobObj.Stages[0].StartTime;
+                            jobObj.EndTime = jobObj.Stages[jobObj.Stages.length - 1].EndTime;
+                            jobObj.Duration = (Date.parse(jobObj.EndTime) - Date.parse(jobObj.StartTime)) / 1000;
+                            $.each(jobObj.Stages, function (k, stage) {
+                                var stageHtml = '<dl class="dl-horizontal">';
+                                $.each(stage, function (m, prop) {
+                                    prop = prop == null ? "null" : prop.replace(/\</g, '&lt;');  //escape html
+                                    stageHtml += '<dt>' + m + ": </dt>" + "<dd>" + prop + '</dd>';  // format
+                                });
+                                stageHtml += '</dl>';
+
+                                jobObj['Stages_' + k] = stageHtml; // JSON.stringify(stage);
+                            });
+                            delete jobObj.Stages;
+                        }
+
+                        // create profile link
+                        var link = location.protocol + '//' + location.host + '/' + 'tools/jobprofile/' + jobObj.TargetAPCluster + '/' + jobObj.TargetCosmosCluster + '/' + jobObj.Runtime + '/' + jobObj.DereferencedRuntime + '/' + jobObj.Guid;
+                        jobObj.ProfileLog = '<a style="text-decoration: none" class="glyphicon glyphicon-search" href="' + link + '" target="_blank"></a>';
+
+                        // create CsLog link
+                        var jmDispatcherLog = location.protocol + '//' + location.host + '/' + 'tools/CsLog/' + jobObj.TargetCosmosCluster + "?startTime=" + jobObj.StartTime + "&endtime=" + jobObj.EndTime + "&searchPattern=" + "cosmosErrorLog_JobManagerDispatcher*";
+                        jobObj.JMDispatcherLog = '<a  style="text-decoration: none" class="glyphicon glyphicon-search" href="' + jmDispatcherLog + '" target="_blank"></a>';
+
+                        flagJobs.push(jobObj);
+                    });
+                });
+
+                return flagJobs;
+            }
+
+            $("#btn_Fetch").click(function () {
+                FetchJobStates();
+            });
+
+            var previouslySelected = null;
+            $('#table_jobState').on('click-row.bs.table', function (e, row, $element) {
+                var detailsTableData = [];
+                detailsTableData.push(row);
+                detailsTable.bootstrapTable('load', detailsTableData);
+
+                if (previouslySelected != null) {
+                    previouslySelected.removeClass('bgcolor');
+                }
+                $element.addClass('bgcolor');
+                previouslySelected = $element;
+            });
+
+            $(".dropdown-menu li a").click(function () {
+                var targetParent = $(this).parentsUntil(".input-group").last().parent(".input-group");
+                if (targetParent != null && targetParent.length == 1) {
+                    var target = targetParent.find("input[data-toggle='dropdown']");
+                    if (target != null) {
+                        target.val($(this).text());
+                        target.change();
+                    }
+                }
+            });
+        });
+
+        function rowStyle(row, index) {
+            if (row.Exception != null && row.Exception != "") {
+                return { classes: 'danger' };
+            }
+            return {};
+        }
+
+        function dateTimeSorter(a, b) {
+            var aDate = new Date(a);
+            var bDate = new Date(b);
+            if (aDate > bDate) return 1;
+            if (aDate < bDate) return -1;
+            return 0;
+        }
+    </script>
+}

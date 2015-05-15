@@ -57,15 +57,6 @@ namespace KiwiBoard.Controllers_API
         }
 
         [HttpGet]
-        [Route("Test_JobStates/{environment}/{runtime}")]
-        public IEnumerable<Entities.Jobs> Test_JobStates(string environment, string runtime)
-        {
-            JavaScriptSerializer jss = new JavaScriptSerializer();
-            var result = jss.Deserialize<Entities.Jobs[]>(File.ReadAllText(HttpContext.Current.Server.MapPath(@"~/app_data/jobstates.json")));
-            return result;
-        }
-
-        [HttpGet]
         [Route("GetProfile/{apcluster}/{environment}/{runtime}/{runtimeCodeName}/{jobId:guid}")]
         public async Task<dynamic> GetProfile(string apcluster, string environment, string runtime, string runtimeCodeName, string jobId)
         {

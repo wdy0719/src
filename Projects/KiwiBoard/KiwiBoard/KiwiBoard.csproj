@@ -438,14 +438,11 @@
     <Content Include="Views\Tools\CsLogView.cshtml" />
     <Content Include="Views\Tools\JobStateView.cshtml" />
     <Content Include="Views\Tools\JobProfileView.cshtml" />
-    <Content Include="Views\Tools\Test.cshtml" />
     <Content Include="Views\Shared\GridView.cshtml" />
     <Content Include="Scripts\PS\Read-phxLogs2.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\" />
-    <Folder Include="Views\KiwiTestJob\" />
-    <Folder Include="Views\KiwiTestResult\" />
     <Folder Include="Views\Reports\" />
   </ItemGroup>
   <ItemGroup>

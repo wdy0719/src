@@ -113,16 +113,6 @@
 </div>
 </div>
 
-<style>
-    .wordwrap {
-        white-space: pre-wrap; /* css-3 */
-        white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-        white-space: -pre-wrap; /* Opera 4-6 */
-        white-space: -o-pre-wrap; /* Opera 7 */
-        word-wrap: break-word; /* Internet Explorer 5.5+ */
-    }
-</style>
-
 @section Scripts
 {
     <script>
@@ -166,20 +156,6 @@
                 default: break;
             }
             return level;
-        }
-
-        function ajaxindicatorstart() {
-            $('body').css('cursor', 'wait');
-            $("input").prop('disabled', true);
-            $("button").prop('disabled', true);
-            $("select").prop('disabled', true);
-        }
-
-        function ajaxindicatorstop() {
-            $("input").prop('disabled', false);
-            $("button").prop('disabled', false);
-            $("select").prop('disabled', false);
-            $('body').css('cursor', 'auto');
         }
 
         function setValue(selector, value) {
