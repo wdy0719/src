@@ -86,6 +86,12 @@ namespace KiwiBoard.Controllers_API
             {
                 var onMachine = string.Empty;
                 var profile = JobDiagnosticProcessor.Instance.FetchJobProfile(apcluster, environment, runtime, runtimeCodeName, jobId, out onMachine);
+
+                if (string.IsNullOrEmpty(profile))
+                {
+                    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = "Profile Not Found." });
+                }
+
                 // var profile = File.ReadAllText(@"C:\Users\v-dayow\Desktop\profile.tmp");
                 var profileJob = JobDiagnosticProcessor.Instance.ParseAnalyzerJobFromProfile(profile);
 
@@ -178,6 +184,10 @@ namespace KiwiBoard.Controllers_API
                 catch (NotFoundException ex)
                 {
                     throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ex.Message });
+                }
+                catch (HttpResponseException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {

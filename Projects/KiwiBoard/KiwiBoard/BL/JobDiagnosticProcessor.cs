@@ -70,11 +70,6 @@ namespace KiwiBoard.BL
                 FileCache.Default.SetProfile(profile, jobId, machineName);
             }
 
-            if (string.IsNullOrEmpty(profile))
-            {
-                throw new NotFoundException("Profile not found!");
-            }
-
             return profile;
         }
 
