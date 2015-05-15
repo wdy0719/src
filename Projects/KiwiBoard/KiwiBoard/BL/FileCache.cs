@@ -11,7 +11,7 @@ namespace KiwiBoard.BL
     {
         public static FileCache Default = new FileCache();
 
-        public static string CacheFolder = System.Web.Hosting.HostingEnvironment.MapPath(@"~/App_Data");
+        public static string CacheFolder = Settings.FileCacheLocation;
 
         static FileCache()
         {

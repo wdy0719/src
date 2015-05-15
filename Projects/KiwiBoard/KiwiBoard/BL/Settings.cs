@@ -19,5 +19,7 @@ namespace KiwiBoard.BL
         public static string PhxAutomationModule = @"D:\tools\PhxAutomation\PHXAutomation.psm1";
         public static string JobAnalyzerModule = @"D:\tools\JobAnalyzer\JobAnalyzer.psd1";
         public static string ReadPhxLogs2Location = @"D:\src\Projects\KiwiBoard\KiwiBoard\Scripts\PS\Read-phxLogs2.ps1";
+
+        public static string FileCacheLocation = System.Web.Hosting.HostingEnvironment.MapPath(@"~/App_Data");
     }
 }
