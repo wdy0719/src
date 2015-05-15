@@ -58,7 +58,7 @@
         <div class="row" style="padding:5px 15px 5px 15px;">
             <h4 style="margin-bottom:0px">RuntimeStats</h4>
             <pre>
-            <code id="runtimeState" class="lang-xml"></code>
+            <code id="runtimeState" class="lang-xml">Select a job process to show runtime stats..</code>
             </pre>
         </div>
 
@@ -68,6 +68,7 @@
             <code id="algebraCode" class="lang-xml"></code>
             </pre>
         </div>
+
     </div>
 </div>
 
@@ -88,14 +89,14 @@
 
         loadProfileObj();
 
-        registryOnClickRowEvent();
+        registryTableEvents();
     });
 
     function loadProfileObj(url) {
         var url = "/api/phxutils/GetProfileProcesses/@ViewBag.apCluster/@ViewBag.environment/@ViewBag.runtime/@ViewBag.dereferencedRuntime/@ViewBag.jobId";
         var profileTable = $('#table_Profile');
 
-        ajaxindicatorstart();
+        mIndicator.show();
         profileTable.bootstrapTable('showLoading');
         $.getJSON(url, function () { })
             .done(function (data) {
@@ -131,15 +132,15 @@
                 alert('Load data error: (' + err.status + ") " + err.statusText + '\n' + err.responseText);
             })
             .always(function () {
-                ajaxindicatorstop();
+                mIndicator.hide();
                 profileTable.bootstrapTable('hideLoading');
             });
     }
 
-    function registryOnClickRowEvent() {
+    function registryTableEvents() {
         $('#table_Profile').on('click-row.bs.table', function (e, name, args) {
 
-            ajaxindicatorstart();
+            mIndicator.show();
 
             try {
                 if (preSelected != null) {
@@ -177,7 +178,7 @@
                 });
             }
             finally {
-                ajaxindicatorstop();
+                mIndicator.hide();
             }
         });
     }

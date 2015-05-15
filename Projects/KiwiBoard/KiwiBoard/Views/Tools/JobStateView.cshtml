@@ -198,7 +198,7 @@
                 jobId = jobId == "" || jobId == "*" ? "all" : jobId;
                 var queryUrl = "/api/phxutils/JobStates/" + environment + "/" + runTime + "/" + machine + "/" + jobId;
 
-                ajaxindicatorstart();
+                mIndicator.show();
                 jobStateTable.bootstrapTable('showLoading');
                 $.getJSON(queryUrl, function () { })
                     .done(function (data) {
@@ -211,7 +211,7 @@
                     })
                     .always(function () {
                         jobStateTable.bootstrapTable('hideLoading');
-                        ajaxindicatorstop();
+                        mIndicator.hide();
                     });
             }
 

@@ -120,12 +120,12 @@
             var searchUrl = '@Model.SearchUrl';
 
             if (searchUrl != '') {
-                ajaxindicatorstart();
+                mIndicator.show();
             }
          
             $('#csLogsTable')
                 .on('load-success.bs.table', function (e, name, args) {
-                    ajaxindicatorstop();
+                    mIndicator.hide();
                 })
                 .on('load-error.bs.table', function (e, name, args) {
                     var errorMsg = "Unknown";
@@ -133,7 +133,7 @@
                         errorMsg = "Bad Request. Please check query parameters!"
                     }
                     alert('Search data got error： ' + errorMsg);
-                    ajaxindicatorstop();
+                    mIndicator.hide();
                 });
         });
 
