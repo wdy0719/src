@@ -67,7 +67,10 @@ namespace KiwiBoard.BL
             if (profile == null)
             {
                 profile = PhxAutomation.DefaultInstance.SearchProfileLog(cosmosCluster, runtime, runtimeCodeName, jobId, out machineName, jmMachines);
-                FileCache.Default.SetProfile(profile, jobId, machineName);
+                if (!string.IsNullOrEmpty(profile))
+                {
+                    FileCache.Default.SetProfile(profile, jobId, machineName);
+                }
             }
 
             return profile;

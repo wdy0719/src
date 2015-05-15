@@ -443,7 +443,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\" />
-    <Folder Include="Views\Reports\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
