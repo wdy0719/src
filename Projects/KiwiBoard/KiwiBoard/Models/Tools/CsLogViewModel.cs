@@ -11,6 +11,9 @@ namespace KiwiBoard.Models.Tools
     public class CsLogViewModel
     {
         static object syncObj = new object();
+        public CsLogViewModel():this(null)
+        { }
+
         public CsLogViewModel(string environment = null)
         {
             this.Environment = environment ?? Settings.CsLogEnvironmentMachineMapping.Keys.First();
@@ -20,25 +23,21 @@ namespace KiwiBoard.Models.Tools
             this.SearchPattern = this.GetLogModules().First();
         }
 
-        public CsLogViewModel(string environment, string startTime, string endTime, string machine, string searchPattern)
-        {
-            this.Environment = environment;
-            this.StartTime = TryParse(startTime);
-            this.EndTime = TryParse(endTime);
-            this.SearchPattern = searchPattern ?? this.GetLogModules().First();
-            this.Machine = machine ?? "*";
-
-            this.SearchUrl = string.Format("/api/PhxUtils/CsLog/{0}/Logs?startTime={1}&endTime={2}&searchPattern={3}&machine={4}", this.Environment, HttpUtility.UrlEncode(this.StartTime.ToString()), HttpUtility.UrlEncode(this.EndTime.ToString()), HttpUtility.UrlEncode(this.SearchPattern), this.Machine);
-        }
-
+        [Required]
         public string Environment { get; set; }
 
+        [Required]
         public string Machine { get; set; }
 
+        [Required]
+        [DataType(DataType.DateTime)]
         public DateTime? StartTime { get; set; }
 
+        [Required]
+        [DataType(DataType.DateTime)]
         public DateTime? EndTime { get; set; }
 
+        [Required]
         public string SearchPattern { get; set; }
 
         public string SearchUrl { get; set; }
@@ -67,19 +66,6 @@ namespace KiwiBoard.Models.Tools
         public string[] GetMachines()
         {
             return Settings.CsLogEnvironmentMachineMapping.First(kv => kv.Key.Equals(this.Environment, StringComparison.InvariantCultureIgnoreCase)).Value;
-        }
-
-        private DateTime? TryParse(string text)
-        {
-            DateTime date;
-            if (DateTime.TryParse(text, out date))
-            {
-                return date;
-            }
-            else
-            {
-                return null;
-            }
         }
     }
 }

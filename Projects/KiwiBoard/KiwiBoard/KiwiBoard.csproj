@@ -166,6 +166,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BL\Extensions.cs" />
     <Compile Include="BL\FileCache.cs" />
     <Compile Include="BL\Settings.cs" />
     <Compile Include="BL\DataProvider.cs" />

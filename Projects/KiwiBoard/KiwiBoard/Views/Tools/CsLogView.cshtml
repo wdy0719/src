@@ -12,23 +12,23 @@
     </div>
     <div class="panel-body">
         <div class="row">
-
-            <div class="col-sm-2" style="min-width:280px">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-addon">Environment:</span>
-                    <select id="environment" name="Environment" class="form-control" onchange="window.location.href = '/Tools/cslog/' + this.value">
-                        @foreach (var env in Model.GetEnvrionments())
-                        {
-                            var selected = Model.Environment.Equals(env,StringComparison.InvariantCultureIgnoreCase) ? "selected" : "";
-                            <option @selected>@env</option>
-                        }
-                    </select>
+            <form id="form" action="~/Tools/CsLog/@Model.Environment" method="post">
+                <div class="col-sm-2" style="min-width:280px">
+                    <div class="input-group input-group-sm @Html.AddClassIfPropertyInError(m=>m.Environment)">
+                        <span class="input-group-addon">Environment:</span>
+                        <select id="environment" name="Environment" class="form-control" onchange="window.location.href = '/Tools/cslog/' + this.value">
+                            @foreach (var env in Model.GetEnvrionments())
+                            {
+                                var selected = Model.Environment.Equals(env, StringComparison.InvariantCultureIgnoreCase) ? "selected" : "";
+                                <option @selected>@env</option>
+                            }
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <form action="~/Tools/CsLog/@Model.Environment" method="get">
+
 
                 <div class="col-sm-2" style="min-width:240px">
-                    <div class="input-group input-group-sm">
+                    <div class='input-group input-group-sm @Html.AddClassIfPropertyInError(m=>m.Machine)'>
                         <span class="input-group-addon">(JM) Machine(s):</span>
                         @*<input id="mf" type="text" class="form-control" placeholder="" value="JM" style="width:40px !important" readonly />*@
                         <input id="machine" name="Machine" type="text" class="form-control" placeholder="* to search all machines" data-toggle="dropdown" value="@Model.Machine">
@@ -41,40 +41,40 @@
                         </ul>
                     </div>
                 </div>
-    
-                    <div class="col-sm-2" style="min-width:260px">
-            <div class="input-group input-group-sm">
-                <span class="input-group-addon">StartTime:</span>
-                <input id="startTime" name="StartTime" class="form-control" placeholder="e.g: 5/12/2015 1:06:49 PM" value="@Model.StartTime" />
-            </div>
-        </div>
 
-        <div class="col-sm-2" style="min-width:260px">
-            <div class="input-group input-group-sm">
-                <span class="input-group-addon">EndTime:</span>
-                <input id="endTime" name="EndTime" class="form-control" placeholder="e.g: 5/12/2015 1:06:49 PM" value="@Model.EndTime" />
-            </div>
-        </div>
+                <div class="col-sm-2" style="min-width:260px">
+                    <div class="input-group input-group-sm @Html.AddClassIfPropertyInError(m=>m.StartTime)">
+                        <span class="input-group-addon">StartTime:</span>
+                        <input id="startTime" name="StartTime" class="form-control" placeholder="e.g: 5/12/2015 1:06:49 PM" value="@Model.StartTime" />
+                    </div>
+                </div>
 
-        <div class="col-sm-3" style="min-width:350px">
-            <div class="input-group input-group-sm">
-                <span class="input-group-addon">Search Pattern:</span>
-                <input id="SearchPattern" name="SearchPattern" type="text" class="form-control" placeholder="eg: CosmosErrorLog*" data-toggle="dropdown" value="@Model.SearchPattern">
-                <ul class="dropdown-menu" role="menu">
-                    @foreach (var module in Model.GetLogModules())
-                    {
-                        <li><a href="#" onclick="setValue('#SearchPattern',this.innerText)"><small>@module</small></a></li>
-                    }
-                </ul>
-            </div>
-        </div>
+                <div class="col-sm-2" style="min-width:260px">
+                    <div class="input-group input-group-sm @Html.AddClassIfPropertyInError(m=>m.EndTime)">
+                        <span class="input-group-addon">EndTime:</span>
+                        <input id="endTime" name="EndTime" class="form-control" placeholder="e.g: 5/12/2015 1:06:49 PM" value="@Model.EndTime" />
+                    </div>
+                </div>
 
-        <div class=" col-sm-2">
-            <div class="input-group input-group-sm">
-                <button class="btn btn-primary btn-sm" type="submit" id="btn_Fetch">Search</button>
-            </div>
-        </div>
-        </form>
+                <div class="col-sm-3" style="min-width:350px">
+                    <div class="input-group input-group-sm @Html.AddClassIfPropertyInError(m=>m.SearchPattern)">
+                        <span class="input-group-addon">Search Pattern:</span>
+                        <input id="SearchPattern" name="SearchPattern" type="text" class="form-control" placeholder="eg: CosmosErrorLog*" data-toggle="dropdown" value="@Model.SearchPattern">
+                        <ul class="dropdown-menu" role="menu">
+                            @foreach (var module in Model.GetLogModules())
+                            {
+                                <li><a href="#" onclick="setValue('#SearchPattern',this.innerText)"><small>@module</small></a></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <div class=" col-sm-2">
+                    <div class="input-group input-group-sm">
+                        <button class="btn btn-primary btn-sm" type="submit" id="btn_Fetch">Search</button>
+                    </div>
+                </div>
+            </form>
     </div>
 
         <div class="row">
@@ -117,24 +117,25 @@
 {
     <script>
         $(document).ready(function () {
+
             var searchUrl = '@Model.SearchUrl';
 
             if (searchUrl != '') {
                 mIndicator.show();
             }
-         
+
             $('#csLogsTable')
-                .on('load-success.bs.table', function (e, name, args) {
-                    mIndicator.hide();
-                })
-                .on('load-error.bs.table', function (e, name, args) {
-                    var errorMsg = "Unknown";
-                    if (name == 400) {
-                        errorMsg = "Bad Request. Please check query parameters!"
-                    }
-                    alert('Search data got error： ' + errorMsg);
-                    mIndicator.hide();
-                });
+             .on('load-success.bs.table', function (e, name, args) {
+                 mIndicator.hide();
+             })
+             .on('load-error.bs.table', function (e, name, args) {
+                 var errorMsg = "Unknown";
+                 if (name == 400) {
+                     errorMsg = "Bad Request. Please check query parameters!"
+                 }
+                 alert('Search data got error： ' + errorMsg);
+                 mIndicator.hide();
+             });
         });
 
         function srcFileFormatter(value, row, index) {
